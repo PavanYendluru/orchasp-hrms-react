@@ -1,3 +1,4 @@
+/** Displays inline and full-page loading indicators. */
 import { cn  } from '../../lib/utils';
 
 export function Spinner({ className }) {

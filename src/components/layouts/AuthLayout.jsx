@@ -1,3 +1,4 @@
+/** Provides the branded split-screen layout for authentication pages. */
 import { motion  } from 'framer-motion';
 import { appName, appTagline  } from '../../constants/app';
 

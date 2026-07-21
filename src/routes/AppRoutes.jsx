@@ -1,3 +1,4 @@
+/** Declares lazy-loaded routes and the authenticated application shell. */
 import { lazy, Suspense } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppShell } from '../components/layouts/AppShell';

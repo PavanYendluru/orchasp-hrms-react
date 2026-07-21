@@ -1,3 +1,4 @@
+/** Defines linting rules for JavaScript and React source modules. */
 import js from '@eslint/js';
 import globals from 'globals';
 import reactHooks from 'eslint-plugin-react-hooks';

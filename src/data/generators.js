@@ -1,3 +1,4 @@
+/** Defines helpers and seed values for creating realistic mock HR records. */
 import { departments,
   jobTitles,
   locations,

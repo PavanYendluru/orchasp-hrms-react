@@ -1,3 +1,4 @@
+/** Displays lightweight placeholder shapes while content is loading. */
 import { forwardRef, HTMLAttributes  } from 'react';
 import { cn  } from '../../lib/utils';
 

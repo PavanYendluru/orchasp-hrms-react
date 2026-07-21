@@ -1,3 +1,4 @@
+/** Organizes candidates across the recruitment pipeline. */
 import { useMemo  } from 'react';
 import { PageHeader  } from '../components/common/PageHeader';
 import { DataTable  } from '../components/tables/DataTable';

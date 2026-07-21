@@ -1,3 +1,4 @@
+/** Delays updates to a value so expensive work can wait for input to settle. */
 import { useMemo, useState  } from 'react';
 
 export function useDebounce(value, delay = 300) {

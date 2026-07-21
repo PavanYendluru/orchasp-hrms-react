@@ -1,3 +1,4 @@
+/** Renders the top navigation controls, alerts, and user menu. */
 import { useState  } from 'react';
 import { useNavigate  } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';

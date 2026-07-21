@@ -1,3 +1,4 @@
+/** Manages persistent application, notification, and account preferences. */
 import { PageHeader  } from '../components/common/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent  } from '../components/ui/Card';
 import { Switch  } from '../components/ui/Switch';

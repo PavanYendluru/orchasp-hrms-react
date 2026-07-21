@@ -1,3 +1,4 @@
+/** Provides theme-aware ApexCharts wrappers used by dashboard visualizations. */
 import Chart from 'react-apexcharts';
 import { useTheme  } from '../../context/ThemeContext';
 

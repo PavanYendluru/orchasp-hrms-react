@@ -1,3 +1,4 @@
+/** Displays a concise employee summary for lists and dashboards. */
 import { Card  } from '../ui/Card';
 import { Avatar  } from '../ui/Avatar';
 import { Badge  } from '../ui/Badge';

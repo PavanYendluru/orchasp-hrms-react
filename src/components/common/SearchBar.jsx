@@ -1,3 +1,4 @@
+/** Provides the shared controlled search input with its leading icon. */
 import SearchIcon from '@mui/icons-material/Search';
 import { cn  } from '../../lib/utils';
 

@@ -1,3 +1,4 @@
+/** Collects credentials and starts the application's mock login flow. */
 import { useState  } from 'react';
 import { useNavigate  } from 'react-router-dom';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';

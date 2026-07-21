@@ -1,3 +1,4 @@
+/** Implements a drag-and-drop Kanban board for project task management. */
 import { useMemo, useState  } from 'react';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors,
  } from '@dnd-kit/core';

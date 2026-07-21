@@ -1,3 +1,4 @@
+/** Lets the signed-in user review and update personal profile details. */
 import { PageHeader  } from '../components/common/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent  } from '../components/ui/Card';
 import { Avatar  } from '../components/ui/Avatar';

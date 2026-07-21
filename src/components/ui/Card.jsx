@@ -1,3 +1,4 @@
+/** Supplies styled card building blocks for grouped interface content. */
 import { forwardRef } from "react";
 import { cn } from "../../lib/utils";
 

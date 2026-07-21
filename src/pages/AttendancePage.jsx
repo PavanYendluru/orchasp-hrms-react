@@ -1,3 +1,4 @@
+/** Tracks employee attendance records and daily punch-in activity. */
 import { useMemo, useState  } from 'react';
 import moment from 'moment';
 import { PageHeader  } from '../components/common/PageHeader';

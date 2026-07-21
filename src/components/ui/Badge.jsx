@@ -1,3 +1,4 @@
+/** Defines compact status labels with consistent color variants. */
 import { cva } from 'class-variance-authority';
 import { cn  } from '../../lib/utils';
 

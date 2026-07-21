@@ -1,3 +1,4 @@
+/** Wraps Radix accordion primitives with the application visual language. */
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { cn  } from '../../lib/utils';

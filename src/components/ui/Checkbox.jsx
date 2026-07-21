@@ -1,3 +1,4 @@
+/** Wraps the Radix checkbox primitive in the shared application style. */
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import CheckIcon from '@mui/icons-material/Check';
 import { cn  } from '../../lib/utils';

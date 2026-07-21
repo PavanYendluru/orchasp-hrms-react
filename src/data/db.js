@@ -1,3 +1,4 @@
+/** Imports and exports the single mock-data source used by the application. */
 // Load the application records from the project's JSON data file.
 import database from '../../db.json';
 

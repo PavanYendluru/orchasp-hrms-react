@@ -1,3 +1,4 @@
+/** Lists company assets and summarizes their assignment status. */
 import { useMemo  } from 'react';
 import { PageHeader  } from '../components/common/PageHeader';
 import { DataTable  } from '../components/tables/DataTable';

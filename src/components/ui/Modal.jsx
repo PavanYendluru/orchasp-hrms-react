@@ -1,3 +1,4 @@
+/** Provides an accessible modal dialog with a consistent page overlay. */
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import CloseIcon from '@mui/icons-material/Close';
 import { cn  } from '../../lib/utils';

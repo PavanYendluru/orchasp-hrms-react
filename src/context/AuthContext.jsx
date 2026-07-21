@@ -1,3 +1,4 @@
+/** Owns the mock authenticated user and login/logout session actions. */
 import { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext(null);

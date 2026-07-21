@@ -1,3 +1,4 @@
+/** Wraps Radix tabs with shared layout and visual treatment. */
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 import { cn  } from '../../lib/utils';
 

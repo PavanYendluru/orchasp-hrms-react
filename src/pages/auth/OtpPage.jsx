@@ -1,3 +1,4 @@
+/** Verifies the one-time passcode during password recovery. */
 import { useRef, useState  } from 'react';
 import { useNavigate  } from 'react-router-dom';
 import { AuthLayout  } from '../../components/layouts/AuthLayout';

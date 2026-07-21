@@ -1,3 +1,4 @@
+/** Exposes a delayed in-memory API that mirrors the application's HR endpoints. */
 import { db  } from '../data/db';
 function delay(value, ms = 250) {
   return new Promise((resolve) => setTimeout(() => resolve(value), ms));

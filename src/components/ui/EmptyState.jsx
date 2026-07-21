@@ -1,3 +1,4 @@
+/** Renders standard empty, loading-error, and no-result content states. */
 import { cn  } from '../../lib/utils';
 
 export function EmptyState({

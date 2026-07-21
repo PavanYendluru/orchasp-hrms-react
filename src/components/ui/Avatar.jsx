@@ -1,3 +1,4 @@
+/** Provides a resilient avatar that falls back to a name-based initial. */
 import { cn, initials  } from '../../lib/utils';
 
 const sizes = {

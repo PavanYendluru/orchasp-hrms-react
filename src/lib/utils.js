@@ -1,3 +1,4 @@
+/** Collects presentation, formatting, and class-name utility functions. */
 import { clsx } from 'clsx';
 import { twMerge  } from 'tailwind-merge';
 

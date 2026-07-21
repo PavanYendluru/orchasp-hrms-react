@@ -1,3 +1,4 @@
+/** Captures and confirms a replacement password after verification. */
 import { useNavigate  } from 'react-router-dom';
 import { AuthLayout  } from '../../components/layouts/AuthLayout';
 import { Button  } from '../../components/ui/Button';

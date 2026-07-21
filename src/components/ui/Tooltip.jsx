@@ -1,3 +1,4 @@
+/** Provides accessible hover and focus help for interface elements. */
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 
 // Display accessible contextual help for an element.

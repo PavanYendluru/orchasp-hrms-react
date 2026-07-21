@@ -1,3 +1,4 @@
+/** Renders the animated title, description, and action area for a page. */
 import { motion  } from 'framer-motion';
 
 export function PageHeader({

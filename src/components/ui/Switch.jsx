@@ -1,3 +1,4 @@
+/** Wraps Radix switch behavior in the application's toggle styling. */
 import * as SwitchPrimitive from '@radix-ui/react-switch';
 import { cn  } from '../../lib/utils';
 

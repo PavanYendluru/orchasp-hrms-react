@@ -1,3 +1,4 @@
+/** Catches render failures and presents a recoverable application error state. */
 import { Component } from 'react';
 import { ErrorState } from '../ui/EmptyState';
 import { Button } from '../ui/Button';

@@ -1,3 +1,4 @@
+/** Displays a key metric, optional trend, and visual accent on dashboards. */
 import { motion  } from 'framer-motion';
 import { Card  } from '../ui/Card';
 import { cn  } from '../../lib/utils';

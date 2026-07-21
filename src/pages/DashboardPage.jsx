@@ -1,3 +1,4 @@
+/** Combines operational HR metrics, activity, and draggable dashboard widgets. */
 import { useMemo, useState  } from 'react';
 import { DndContext,
   PointerSensor,

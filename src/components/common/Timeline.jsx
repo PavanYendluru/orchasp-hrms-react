@@ -1,3 +1,4 @@
+/** Renders chronological activity events with configurable visual status. */
 import { cn  } from '../../lib/utils';
 
 const dotColors = {

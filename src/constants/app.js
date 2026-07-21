@@ -1,3 +1,4 @@
+/** Centralizes HR domain constants used by pages and mock-data generators. */
 export const departments = [
   'Engineering',
   'Product',

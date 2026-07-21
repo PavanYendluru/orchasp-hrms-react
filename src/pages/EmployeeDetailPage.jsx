@@ -1,3 +1,4 @@
+/** Shows an individual employee's profile, history, and related records. */
 import { useMemo, useState  } from 'react';
 import { useParams, useNavigate, Link  } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';

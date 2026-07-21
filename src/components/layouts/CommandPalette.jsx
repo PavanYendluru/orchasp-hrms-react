@@ -1,3 +1,4 @@
+/** Implements keyboard-accessible command search and route shortcuts. */
 import { useEffect, useState  } from 'react';
 import { Command  } from 'cmdk';
 import { useNavigate  } from 'react-router-dom';

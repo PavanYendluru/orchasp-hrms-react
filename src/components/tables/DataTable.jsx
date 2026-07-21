@@ -1,3 +1,4 @@
+/** Provides sorting, filtering, pagination, and selection for tabular data. */
 import { useMemo, useState  } from 'react';
 import { flexRender,
   getCoreRowModel,

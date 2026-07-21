@@ -1,3 +1,4 @@
+/** Renders the hierarchical navigation trail for the current page. */
 import { Fragment  } from 'react';
 import { Link  } from 'react-router-dom';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';

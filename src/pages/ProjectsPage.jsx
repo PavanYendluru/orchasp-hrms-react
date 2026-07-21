@@ -1,3 +1,4 @@
+/** Displays active projects, staffing, deadlines, and progress. */
 import { useMemo  } from 'react';
 import moment from 'moment';
 import { PageHeader  } from '../components/common/PageHeader';

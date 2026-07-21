@@ -1,3 +1,4 @@
+/** Renders responsive primary navigation and session controls. */
 import { NavLink  } from 'react-router-dom';
 import { motion, AnimatePresence  } from 'framer-motion';
 import MenuIcon from '@mui/icons-material/Menu';

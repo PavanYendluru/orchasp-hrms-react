@@ -1,3 +1,4 @@
+/** Supplies composable Recharts cards with shared visual styling. */
 import { Area,
   AreaChart,
   Bar,

@@ -1,3 +1,4 @@
+/** Groups reusable form fields and validation messages behind one context. */
 import { useForm } from 'react-hook-form';
 import { yupResolver  } from '@hookform/resolvers/yup';
 export function useFormWithYup(schema, options) {

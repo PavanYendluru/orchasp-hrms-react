@@ -1,3 +1,4 @@
+/** Exposes styled dropdown-menu primitives used throughout the interface. */
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { cn } from '../../lib/utils';
 

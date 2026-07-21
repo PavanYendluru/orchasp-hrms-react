@@ -1,3 +1,4 @@
+/** Manages employee leave requests, balances, and request status. */
 import { useMemo, useState  } from 'react';
 import moment from 'moment';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';

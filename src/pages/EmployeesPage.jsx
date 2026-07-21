@@ -1,3 +1,4 @@
+/** Provides searchable, filterable employee-directory management. */
 import { useMemo, useState  } from 'react';
 import { useNavigate  } from 'react-router-dom';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';

@@ -1,3 +1,4 @@
+/** Presents organization-level HR trends through interactive visualizations. */
 import { useMemo  } from 'react';
 import { PageHeader  } from '../components/common/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent  } from '../components/ui/Card';

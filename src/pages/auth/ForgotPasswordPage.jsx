@@ -1,3 +1,4 @@
+/** Lets a user request a password-reset flow from the authentication area. */
 import { useNavigate  } from 'react-router-dom';
 import { AuthLayout  } from '../../components/layouts/AuthLayout';
 import { Button  } from '../../components/ui/Button';

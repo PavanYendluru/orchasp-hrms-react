@@ -1,3 +1,4 @@
+/** Tracks whether a CSS media query currently matches in the browser. */
 import { useEffect, useState  } from 'react';
 
 export function useMediaQuery(query) {

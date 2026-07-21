@@ -1,3 +1,4 @@
+/** Registers Chart.js primitives and exposes reusable themed chart components. */
 import { Chart as ChartJS,
   CategoryScale,
   LinearScale,

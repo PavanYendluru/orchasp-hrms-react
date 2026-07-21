@@ -1,3 +1,4 @@
+/** Persists the selected color theme and resolves the active appearance. */
 import { createContext, useContext, useEffect, useState } from 'react';
 
 const ThemeContext = createContext(null);

@@ -1,3 +1,4 @@
+/** Lets users select, preview, and export HR data reports. */
 import { useState  } from 'react';
 import { PageHeader  } from '../components/common/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent  } from '../components/ui/Card';

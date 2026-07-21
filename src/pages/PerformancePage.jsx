@@ -1,3 +1,4 @@
+/** Summarizes employee reviews, scores, and performance trends. */
 import { useMemo  } from 'react';
 import { PageHeader  } from '../components/common/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent  } from '../components/ui/Card';

@@ -1,3 +1,4 @@
+/** Contains reusable notification and profile summary card components. */
 import { Card  } from '../ui/Card';
 import { Avatar  } from '../ui/Avatar';
 import { Badge  } from '../ui/Badge';

@@ -1,3 +1,4 @@
+/** Defines the application's accessible button variants and sizes. */
 import { forwardRef } from 'react';
 import { cva } from 'class-variance-authority';
 import { cn  } from '../../lib/utils';

@@ -1,3 +1,4 @@
+/** Synchronizes React state with browser local storage for persistent preferences. */
 import { useCallback, useEffect, useState  } from 'react';
 
 // Persist a React state value under a browser storage key.

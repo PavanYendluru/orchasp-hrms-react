@@ -1,3 +1,4 @@
+/** Displays payroll records and their monthly payment breakdowns. */
 import { useMemo, useState  } from 'react';
 import moment from 'moment';
 import { PageHeader  } from '../components/common/PageHeader';
