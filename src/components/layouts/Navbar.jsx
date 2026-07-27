@@ -117,7 +117,7 @@ export function Navbar({ onMenuClick, onCommandOpen }) {
             <span>Settings</span>
           </DropdownItem>
           <DropdownSeparator />
-          <DropdownItem onClick={logout} danger>
+          <DropdownItem onClick={() => navigate('/login')} danger>
             <span>Logout</span>
           </DropdownItem>
         </Dropdown>

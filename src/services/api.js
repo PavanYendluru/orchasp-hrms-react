@@ -39,6 +39,16 @@ export const api = {
   leaves: {
     list: () => delay(db.leaves),
     forEmployee: (employeeId) => delay(db.leaves.filter((l) => l.employeeId === employeeId)),
+    create: (request) => {
+      const leave = {
+        id: `leave_${Date.now()}`,
+        status: 'pending',
+        appliedAt: new Date().toISOString(),
+        ...request,
+      };
+      db.leaves.unshift(leave);
+      return delay(leave);
+    },
   },
   payroll: {
     list: () => delay(db.payroll),
@@ -47,6 +57,14 @@ export const api = {
   assets: {
     list: () => delay(db.assets),
     forEmployee: (employeeId) => delay(db.assets.filter((a) => a.assignedToId === employeeId)),
+    assign: ({ assetId, employeeId }) => {
+      const asset = db.assets.find((item) => item.id === assetId);
+      if (!asset) throw new Error('Asset not found');
+      asset.assignedToId = employeeId;
+      asset.assignedDate = new Date().toISOString().slice(0, 10);
+      asset.status = 'assigned';
+      return delay(asset);
+    },
   },
   projects: {
     list: () => delay(db.projects),

@@ -1,6 +1,6 @@
 /** Collects credentials and starts the application's mock login flow. */
 import { useState  } from 'react';
-import { useNavigate  } from 'react-router-dom';
+import { Link, useNavigate  } from 'react-router-dom';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 import { AuthLayout  } from '../../components/layouts/AuthLayout';
@@ -49,6 +49,9 @@ export function LoginPage() {
         <Button type="submit" size="lg" className="w-full">Sign In</Button>
         <p className="text-center text-sm text-muted-foreground">
           Don't have an account? <button onClick={() => navigate('/forgot-password')} className="font-medium text-primary hover:underline">Contact admin</button>
+        </p>
+        <p className="text-center text-sm text-muted-foreground">
+          Are you an employee? <Link to="/employee/login" className="font-medium text-primary hover:underline">Sign in to the employee portal</Link>
         </p>
       </form>
     </AuthLayout>

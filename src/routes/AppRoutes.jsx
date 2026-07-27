@@ -4,6 +4,8 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppShell } from '../components/layouts/AppShell';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { PageLoader } from '../components/ui/Spinner';
+import { EmployeeProtectedRoute } from './EmployeeProtectedRoute';
+import { EmployeeAppShell } from '../components/layouts/EmployeeAppShell';
 
 const DashboardPage = lazy(() => import('../pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
 const EmployeesPage = lazy(() => import('../pages/EmployeesPage').then((m) => ({ default: m.EmployeesPage })));
@@ -25,6 +27,12 @@ const LoginPage = lazy(() => import('../pages/auth/LoginPage').then((m) => ({ de
 const ForgotPasswordPage = lazy(() => import('../pages/auth/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage })));
 const OtpPage = lazy(() => import('../pages/auth/OtpPage').then((m) => ({ default: m.OtpPage })));
 const ResetPasswordPage = lazy(() => import('../pages/auth/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage })));
+const EmployeeLoginPage = lazy(() => import('../pages/employee/EmployeeLoginPage').then((m) => ({ default: m.EmployeeLoginPage })));
+const EmployeeDashboardPage = lazy(() => import('../pages/employee/EmployeeDashboardPage').then((m) => ({ default: m.EmployeeDashboardPage })));
+const EmployeeProfilePage = lazy(() => import('../pages/employee/EmployeeProfilePage').then((m) => ({ default: m.EmployeeProfilePage })));
+const EmployeeLeavePage = lazy(() => import('../pages/employee/EmployeeLeavePage').then((m) => ({ default: m.EmployeeLeavePage })));
+const EmployeePayslipsPage = lazy(() => import('../pages/employee/EmployeePayslipsPage').then((m) => ({ default: m.EmployeePayslipsPage })));
+const EmployeeAssetsPage = lazy(() => import('../pages/employee/EmployeeAssetsPage').then((m) => ({ default: m.EmployeeAssetsPage })));
 
 export function AppRoutes() {
   return (
@@ -34,6 +42,17 @@ export function AppRoutes() {
         <Route path="/forgot-password" element={<Suspense fallback={<PageLoader />}><ForgotPasswordPage /></Suspense>} />
         <Route path="/otp" element={<Suspense fallback={<PageLoader />}><OtpPage /></Suspense>} />
         <Route path="/reset-password" element={<Suspense fallback={<PageLoader />}><ResetPasswordPage /></Suspense>} />
+        <Route path="/employee/login" element={<Suspense fallback={<PageLoader />}><EmployeeLoginPage /></Suspense>} />
+
+        <Route element={<EmployeeProtectedRoute />}>
+          <Route element={<EmployeeAppShell />}>
+            <Route path="/employee/dashboard" element={<Suspense fallback={<PageLoader />}><EmployeeDashboardPage /></Suspense>} />
+            <Route path="/employee/profile" element={<Suspense fallback={<PageLoader />}><EmployeeProfilePage /></Suspense>} />
+            <Route path="/employee/leave" element={<Suspense fallback={<PageLoader />}><EmployeeLeavePage /></Suspense>} />
+            <Route path="/employee/payslips" element={<Suspense fallback={<PageLoader />}><EmployeePayslipsPage /></Suspense>} />
+            <Route path="/employee/assets" element={<Suspense fallback={<PageLoader />}><EmployeeAssetsPage /></Suspense>} />
+          </Route>
+        </Route>
 
         <Route
           element={
