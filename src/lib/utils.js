@@ -58,3 +58,28 @@ export function downloadCSV(filename, rows) {
 export function randomId(prefix = 'id') {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
 }
+
+/** Converts a simple CSV file into objects and reports malformed rows clearly. */
+export function parseCSV(text) {
+  const rows = text.trim().split(/\r?\n/).filter(Boolean);
+  if (rows.length < 2) throw new Error('The CSV must include a header row and at least one record.');
+  const parseRow = (line) => {
+    const cells = [];
+    let cell = ''; let quoted = false;
+    for (let index = 0; index < line.length; index += 1) {
+      const char = line[index];
+      if (char === '"' && line[index + 1] === '"') { cell += '"'; index += 1; }
+      else if (char === '"') quoted = !quoted;
+      else if (char === ',' && !quoted) { cells.push(cell.trim()); cell = ''; }
+      else cell += char;
+    }
+    cells.push(cell.trim());
+    return cells;
+  };
+  const headers = parseRow(rows[0]).map((header) => header.trim());
+  return rows.slice(1).map((line, index) => {
+    const cells = parseRow(line);
+    if (cells.length !== headers.length) throw new Error(`Row ${index + 2} has ${cells.length} values; expected ${headers.length}.`);
+    return Object.fromEntries(headers.map((header, column) => [header, cells[column]]));
+  });
+}

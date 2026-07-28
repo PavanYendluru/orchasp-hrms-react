@@ -10,6 +10,7 @@ import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined
 import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
 import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined';
 import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
+import CorporateFareOutlinedIcon from '@mui/icons-material/CorporateFareOutlined';
 
 export function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -17,6 +18,9 @@ export function SettingsPage() {
   const [pushNotif, setPushNotif] = useLocalStorage('orchasp-push-notif', true);
   const [twoFA, setTwoFA] = useLocalStorage('orchasp-2fa', false);
   const [language, setLanguage] = useLocalStorage('orchasp-lang', 'en');
+  const [company, setCompany] = useLocalStorage('orchasp-company-settings', {
+    name: 'Orchasp', workingDays: 'Mon–Fri', leavePolicy: 'Standard annual leave', payrollCycle: 'Monthly',
+  });
 
   return (
     <div className="space-y-5">
@@ -87,9 +91,18 @@ export function SettingsPage() {
         </CardContent>
       </Card>
 
-      <div className="flex justify-end">
-        <Button onClick={() => toast.success('Settings saved successfully')}>Save Changes</Button>
-      </div>
+      {/* Company defaults are stored separately from personal display preferences. */}
+      <Card>
+        <CardHeader><CardTitle className="flex items-center gap-2"><CorporateFareOutlinedIcon className="h-4 w-4" /> Organization</CardTitle></CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-2">
+          <label className="text-sm font-medium text-foreground">Organization name<input className="input-base mt-1" value={company.name} onChange={(event) => setCompany({ ...company, name: event.target.value })} /></label>
+          <label className="text-sm font-medium text-foreground">Working days<input className="input-base mt-1" value={company.workingDays} onChange={(event) => setCompany({ ...company, workingDays: event.target.value })} /></label>
+          <label className="text-sm font-medium text-foreground">Leave policy<input className="input-base mt-1" value={company.leavePolicy} onChange={(event) => setCompany({ ...company, leavePolicy: event.target.value })} /></label>
+          <label className="text-sm font-medium text-foreground">Payroll cycle<select className="input-base mt-1" value={company.payrollCycle} onChange={(event) => setCompany({ ...company, payrollCycle: event.target.value })}><option>Monthly</option><option>Bi-weekly</option><option>Weekly</option></select></label>
+        </CardContent>
+      </Card>
+
+      <p className="text-right text-xs text-muted-foreground">Changes are saved automatically on this device.</p>
     </div>
   );
 }

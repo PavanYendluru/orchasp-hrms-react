@@ -1,5 +1,6 @@
-/** Exposes a delayed in-memory API that mirrors the application's HR endpoints. */
-import { db  } from '../data/db';
+/** Exposes delayed local APIs that mirror the future HTTP service boundary. */
+import { hrmsStore } from './hrmsStore';
+const getData = () => hrmsStore.getSnapshot();
 function delay(value, ms = 250) {
   return new Promise((resolve) => setTimeout(() => resolve(value), ms));
 }
@@ -12,7 +13,7 @@ function paginate(items, page = 1, pageSize = 10) {
 export const api = {
   employees: {
     list: (params = {}) => {
-      let items = [...db.employees];
+      let items = [...getData().employees];
       if (params?.search) {
         const q = params.search.toLowerCase();
         items = items.filter(
@@ -25,20 +26,20 @@ export const api = {
       if (params?.departmentId) items = items.filter((e) => e.departmentId === params.departmentId);
       return delay(paginate(items, params?.page, params?.pageSize));
     },
-    all: () => delay(db.employees),
-    get: (id) => delay(db.employees.find((e) => e.id === id) || null),
+    all: () => delay(getData().employees),
+    get: (id) => delay(getData().employees.find((e) => e.id === id) || null),
   },
   departments: {
-    list: () => delay(db.departments),
-    get: (id) => delay(db.departments.find((d) => d.id === id) || null),
+    list: () => delay(getData().departments),
+    get: (id) => delay(getData().departments.find((d) => d.id === id) || null),
   },
   attendance: {
-    list: () => delay(db.attendance),
-    forEmployee: (employeeId) => delay(db.attendance.filter((a) => a.employeeId === employeeId)),
+    list: () => delay(getData().attendance),
+    forEmployee: (employeeId) => delay(getData().attendance.filter((a) => a.employeeId === employeeId)),
   },
   leaves: {
-    list: () => delay(db.leaves),
-    forEmployee: (employeeId) => delay(db.leaves.filter((l) => l.employeeId === employeeId)),
+    list: () => delay(getData().leaves),
+    forEmployee: (employeeId) => delay(getData().leaves.filter((l) => l.employeeId === employeeId)),
     create: (request) => {
       const leave = {
         id: `leave_${Date.now()}`,
@@ -46,57 +47,53 @@ export const api = {
         appliedAt: new Date().toISOString(),
         ...request,
       };
-      db.leaves.unshift(leave);
+      getData().leaves.unshift(leave);
       return delay(leave);
     },
   },
   payroll: {
-    list: () => delay(db.payroll),
-    forEmployee: (employeeId) => delay(db.payroll.filter((p) => p.employeeId === employeeId)),
+    list: () => delay(getData().payroll),
+    forEmployee: (employeeId) => delay(getData().payroll.filter((p) => p.employeeId === employeeId)),
   },
   assets: {
-    list: () => delay(db.assets),
-    forEmployee: (employeeId) => delay(db.assets.filter((a) => a.assignedToId === employeeId)),
+    list: () => delay(getData().assets),
+    forEmployee: (employeeId) => delay(getData().assets.filter((a) => a.assignedToId === employeeId)),
     assign: ({ assetId, employeeId }) => {
-      const asset = db.assets.find((item) => item.id === assetId);
-      if (!asset) throw new Error('Asset not found');
-      asset.assignedToId = employeeId;
-      asset.assignedDate = new Date().toISOString().slice(0, 10);
-      asset.status = 'assigned';
+      const asset = hrmsStore.assets.assign(assetId, employeeId);
       return delay(asset);
     },
   },
   projects: {
-    list: () => delay(db.projects),
-    forEmployee: (employeeId) => delay(db.projects.filter((p) => p.memberIds.includes(employeeId))),
+    list: () => delay(getData().projects),
+    forEmployee: (employeeId) => delay(getData().projects.filter((p) => p.memberIds.includes(employeeId))),
   },
   tasks: {
-    list: () => delay(db.tasks),
-    forEmployee: (employeeId) => delay(db.tasks.filter((t) => t.assigneeId === employeeId)),
+    list: () => delay(getData().tasks),
+    forEmployee: (employeeId) => delay(getData().tasks.filter((t) => t.assigneeId === employeeId)),
   },
   notifications: {
-    list: () => delay(db.notifications),
+    list: () => delay(getData().notifications),
   },
   announcements: {
-    list: () => delay(db.announcements),
+    list: () => delay(getData().announcements),
   },
   holidays: {
-    list: () => delay(db.holidays),
+    list: () => delay(getData().holidays),
   },
   stats: {
     overview: () =>
       delay({
-        totalEmployees: db.employees.length,
-        activeEmployees: db.employees.filter((employee) => employee.status === 'active').length,
-        onLeave: db.employees.filter((e) => e.status === 'on-leave').length,
-        pendingLeaves: db.leaves.filter((l) => l.status === 'pending').length,
-        totalDepartments: db.departments.length,
-        totalAssets: db.assets.length,
-        assignedAssets: db.assets.filter((a) => a.status === 'assigned').length,
-        monthlyPayroll: db.payroll
+        totalEmployees: getData().employees.length,
+        activeEmployees: getData().employees.filter((employee) => employee.status === 'active').length,
+        onLeave: getData().employees.filter((e) => e.status === 'on-leave').length,
+        pendingLeaves: getData().leaves.filter((l) => l.status === 'pending').length,
+        totalDepartments: getData().departments.length,
+        totalAssets: getData().assets.length,
+        assignedAssets: getData().assets.filter((a) => a.status === 'assigned').length,
+        monthlyPayroll: getData().payroll
           .filter((p) => p.month === '2025-06')
           .reduce((s, p) => s + p.netSalary, 0),
-        activeProjects: db.projects.filter((p) => p.status === 'active').length,
+        activeProjects: getData().projects.filter((p) => p.status === 'active').length,
       }),
   },
 };

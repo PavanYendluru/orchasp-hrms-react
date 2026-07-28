@@ -6,6 +6,7 @@ import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { PageLoader } from '../components/ui/Spinner';
 import { EmployeeProtectedRoute } from './EmployeeProtectedRoute';
 import { EmployeeAppShell } from '../components/layouts/EmployeeAppShell';
+import { ProtectedRoute } from './ProtectedRoute';
 
 const DashboardPage = lazy(() => import('../pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
 const EmployeesPage = lazy(() => import('../pages/EmployeesPage').then((m) => ({ default: m.EmployeesPage })));
@@ -54,13 +55,9 @@ export function AppRoutes() {
           </Route>
         </Route>
 
-        <Route
-          element={
-            <ErrorBoundary>
-              <AppShell />
-            </ErrorBoundary>
-          }
-        >
+        {/* All HR pages require a live HR session. */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<ErrorBoundary><AppShell /></ErrorBoundary>}>
           <Route path="/dashboard" element={<Suspense fallback={<PageLoader />}><DashboardPage /></Suspense>} />
           <Route path="/employees" element={<Suspense fallback={<PageLoader />}><EmployeesPage /></Suspense>} />
           <Route path="/employees/:id" element={<Suspense fallback={<PageLoader />}><EmployeeDetailPage /></Suspense>} />
@@ -77,6 +74,7 @@ export function AppRoutes() {
           <Route path="/analytics" element={<Suspense fallback={<PageLoader />}><AnalyticsPage /></Suspense>} />
           <Route path="/settings" element={<Suspense fallback={<PageLoader />}><SettingsPage /></Suspense>} />
           <Route path="/profile" element={<Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>} />
+          </Route>
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />

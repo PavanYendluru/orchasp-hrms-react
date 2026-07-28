@@ -5,6 +5,8 @@ import { Button } from '../../components/ui/Button';
 import { FormField } from '../../components/ui/Input';
 import { useEmployeeAuth } from '../../context/EmployeeAuthContext';
 import { INITIAL_EMPLOYEE_PASSWORD } from '../../services/employeeAuthService';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
 
 export function EmployeeLoginPage() {
   const { login } = useEmployeeAuth();
@@ -12,6 +14,7 @@ export function EmployeeLoginPage() {
   const location = useLocation();
   const [credentials, setCredentials] = useState({ employeeId: '', password: '' });
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const submit = (event) => {
     event.preventDefault();
     try {
@@ -23,7 +26,8 @@ export function EmployeeLoginPage() {
     <form className="space-y-5" onSubmit={submit}>
       {error && <p className="rounded-lg bg-danger/10 p-3 text-sm text-danger">{error}</p>}
       <FormField label="Employee ID"><input className="input-base" value={credentials.employeeId} onChange={(e) => setCredentials({ ...credentials, employeeId: e.target.value })} placeholder="EMP-002" autoComplete="username" required /></FormField>
-      <FormField label="Password"><input className="input-base" type="password" value={credentials.password} onChange={(e) => setCredentials({ ...credentials, password: e.target.value })} autoComplete="current-password" required /></FormField>
+      {/* Password visibility gives employees a safe way to verify their typed credentials. */}
+      <FormField label="Password"><div className="relative"><input className="input-base pr-10" type={showPassword ? 'text' : 'password'} value={credentials.password} onChange={(e) => setCredentials({ ...credentials, password: e.target.value })} autoComplete="current-password" required /><button type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword((current) => !current)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">{showPassword ? <VisibilityOffOutlinedIcon className="h-4 w-4" /> : <VisibilityOutlinedIcon className="h-4 w-4" />}</button></div></FormField>
       <Button type="submit" className="w-full" size="lg">Sign in to employee portal</Button>
       <p className="rounded-lg bg-muted p-3 text-xs text-muted-foreground">Demo: use any active employee ID (for example <strong>EMP-002</strong>) with password <strong>{INITIAL_EMPLOYEE_PASSWORD}</strong>.</p>
       <p className="text-center text-sm text-muted-foreground">HR administrator? <Link to="/login" className="font-medium text-primary hover:underline">Sign in to HRMS</Link></p>

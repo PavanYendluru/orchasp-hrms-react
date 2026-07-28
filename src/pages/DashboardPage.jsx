@@ -1,5 +1,6 @@
 /** Combines operational HR metrics, activity, and draggable dashboard widgets. */
 import { useMemo, useState  } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DndContext,
   PointerSensor,
   closestCenter,
@@ -24,8 +25,8 @@ import { Timeline  } from '../components/common/Timeline';
 import { AreaChartCard, BarChartCard, PieChartCard, RadarChartCard  } from '../components/charts/Recharts';
 import { ApexRadialChart, ApexHeatmapChart  } from '../components/charts/ApexCharts';
 import { ChartJSLine  } from '../components/charts/ChartJS';
-import { db  } from '../data/db';
 import { formatCurrency, formatCompactNumber  } from '../lib/utils';
+import { useHrmsData } from '../services/hrmsStore';
 import moment from 'moment';
 
 function SortableWidget({ id, children }) {
@@ -43,50 +44,53 @@ function SortableWidget({ id, children }) {
 }
 
 export function DashboardPage() {
+  const data = useHrmsData();
+  const navigate = useNavigate();
+  const [range, setRange] = useState('12');
   const [widgets, setWidgets] = useState(['growth', 'attendance', 'payroll', 'distribution']);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
   const stats = useMemo(() => ({
-    totalEmployees: db.employees.length,
-    active: db.employees.filter((e) => e.status === 'active').length,
-    onLeave: db.employees.filter((e) => e.status === 'on-leave').length,
-    pendingLeaves: db.leaves.filter((l) => l.status === 'pending').length,
-    monthlyPayroll: db.payroll.filter((p) => p.month === '2025-06').reduce((s, p) => s + p.netSalary, 0),
-    assignedAssets: db.assets.filter((a) => a.status === 'assigned').length,
-  activeProjects: db.projects.filter((p) => p.status === 'active').length,
-  departments: db.departments.length,
-  birthdays: db.employees.filter((e) => {
+    totalEmployees: data.employees.length,
+    active: data.employees.filter((e) => e.status === 'active').length,
+    onLeave: data.employees.filter((e) => e.status === 'on-leave').length,
+    pendingLeaves: data.leaves.filter((l) => l.status === 'pending').length,
+    monthlyPayroll: data.payroll.filter((p) => p.month === '2025-06').reduce((s, p) => s + p.netSalary, 0),
+    assignedAssets: data.assets.filter((a) => a.status === 'assigned').length,
+  activeProjects: data.projects.filter((p) => p.status === 'active').length,
+  departments: data.departments.length,
+  birthdays: data.employees.filter((e) => {
     const m = moment(e.hireDate);
     return m.month() === moment().month();
   }),
-    topPerformers: [...db.employees].sort((a, b) => b.performanceScore - a.performanceScore).slice(0, 5),
-  }), []);
+    topPerformers: [...data.employees].sort((a, b) => b.performanceScore - a.performanceScore).slice(0, 5),
+  }), [data]);
 
   const growthData = useMemo(() => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return months.map((m, i) => ({
+    return months.slice(-Number(range)).map((m, i) => ({
       month: m,
-      employees: Math.round(40 + i * 2.5 + Math.random() * 4),
-      attrition: Math.round(2 + Math.random() * 4),
+      employees: data.employees.filter((employee) => moment(employee.hireDate).month() <= i).length,
+      attrition: data.employees.filter((employee) => employee.status === 'terminated' && moment(employee.hireDate).month() === i).length,
     }));
-  }, []);
+  }, [data.employees, range]);
 
   const attendanceData = useMemo(() => {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-    return days.map((d) => ({
+    return days.map((d, index) => ({
       day: d,
-      present: Math.round(40 + Math.random() * 15),
-      late: Math.round(Math.random() * 8),
-      remote: Math.round(5 + Math.random() * 10),
+      present: data.attendance.filter((entry) => entry.status === 'present' && moment(entry.date).isoWeekday() === index + 1).length,
+      late: data.attendance.filter((entry) => entry.status === 'late' && moment(entry.date).isoWeekday() === index + 1).length,
+      remote: data.attendance.filter((entry) => entry.status === 'remote' && moment(entry.date).isoWeekday() === index + 1).length,
     }));
-  }, []);
+  }, [data.attendance]);
 
   const deptDistribution = useMemo(
-    () => db.departments.map((d) => ({
+    () => data.departments.map((d) => ({
       name: d.name,
-      value: db.employees.filter((e) => e.departmentId === d.id).length,
+      value: data.employees.filter((e) => e.departmentId === d.id).length,
     })),
-    []
+    [data.departments, data.employees]
   );
 
   const radarData = useMemo(
@@ -105,17 +109,17 @@ export function DashboardPage() {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     return days.map((day) => ({
       name: day,
-      data: ['9am', '11am', '1pm', '3pm', '5pm'].map((hour) => ({ x: hour, y: Math.round(Math.random() * 100) })),
+      data: ['9am', '11am', '1pm', '3pm', '5pm'].map((hour, index) => ({ x: hour, y: data.attendance.filter((entry) => moment(entry.date).format('ddd') === day).length * (index + 1) })),
     }));
-  }, []);
+  }, [data.attendance]);
 
   const payrollTrend = useMemo(() => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
     return {
       labels: months,
-      datasets: [{ label: 'Net Payroll', data: months.map(() => Math.round(400000 + Math.random() * 80000)) }],
+      datasets: [{ label: 'Net Payroll', data: months.map((month, index) => data.payroll.filter((item) => item.month?.endsWith(String(index + 1).padStart(2, '0'))).reduce((sum, item) => sum + item.netSalary, 0)) }],
     };
-  }, []);
+  }, [data.payroll]);
 
   const timelineItems = useMemo(
     () => [
@@ -184,14 +188,14 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Dashboard" description="Overview of your organization's key metrics and activities" />
+      <PageHeader title="Dashboard" description="Overview of your organization's key metrics and activities" actions={<select aria-label="Dashboard date range" value={range} onChange={(event) => setRange(event.target.value)} className="input-base w-auto"><option value="6">Last 6 months</option><option value="12">Last 12 months</option></select>} />
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard index={0} label="Total Employees" value={formatCompactNumber(stats.totalEmployees)} icon={<PeopleAltOutlinedIcon className="h-5 w-5" />} trend="up" trendLabel="8.2%" accent="primary" />
-        <StatCard index={1} label="On Leave Today" value={stats.onLeave} icon={<EventAvailableOutlinedIcon className="h-5 w-5" />} trend="down" trendLabel="3.1%" accent="warning" />
+        <button type="button" onClick={() => navigate('/employees')} className="text-left"><StatCard index={0} label="Total Employees" value={formatCompactNumber(stats.totalEmployees)} icon={<PeopleAltOutlinedIcon className="h-5 w-5" />} trend="up" trendLabel="Live" accent="primary" /></button>
+        <button type="button" onClick={() => navigate('/leave')} className="text-left"><StatCard index={1} label="On Leave Today" value={stats.onLeave} icon={<EventAvailableOutlinedIcon className="h-5 w-5" />} trend="down" trendLabel="Live" accent="warning" /></button>
         <StatCard index={2} label="Monthly Payroll" value={formatCurrency(stats.monthlyPayroll)} icon={<PaymentsOutlinedIcon className="h-5 w-5" />} trend="up" trendLabel="2.4%" accent="success" />
-        <StatCard index={3} label="Assigned Assets" value={stats.assignedAssets} icon={<Inventory2OutlinedIcon className="h-5 w-5" />} trend="up" trendLabel="1.8%" accent="secondary" />
+        <button type="button" onClick={() => navigate('/assets')} className="text-left"><StatCard index={3} label="Assigned Assets" value={stats.assignedAssets} icon={<Inventory2OutlinedIcon className="h-5 w-5" />} trend="up" trendLabel="Live" accent="secondary" /></button>
       </div>
 
       {/* Quick stats row */}
@@ -303,7 +307,7 @@ export function DashboardPage() {
       <Card>
         <CardHeader><CardTitle>Latest Announcements</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {db.announcements.map((a) => (
+          {data.announcements.map((a) => (
             <div key={a.id} className="rounded-lg border border-border p-4 transition-colors hover:bg-muted/40">
               <p className="text-sm font-semibold text-foreground">{a.title}</p>
               <p className="mt-1 text-xs text-muted-foreground">{a.body}</p>

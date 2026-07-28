@@ -25,6 +25,12 @@ export function Navbar({ onMenuClick, onCommandOpen }) {
   const notifications = db.notifications.slice(0, 6);
   const unread = db.notifications.filter((n) => !n.read).length;
 
+  /** Clears the HR session before navigating away from protected screens. */
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border glass px-4 lg:px-6">
       <button
@@ -117,7 +123,7 @@ export function Navbar({ onMenuClick, onCommandOpen }) {
             <span>Settings</span>
           </DropdownItem>
           <DropdownSeparator />
-          <DropdownItem onClick={() => navigate('/login')} danger>
+          <DropdownItem onClick={handleLogout} danger>
             <span>Logout</span>
           </DropdownItem>
         </Dropdown>

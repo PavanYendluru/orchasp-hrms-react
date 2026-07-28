@@ -1,5 +1,5 @@
 /** Provides a separate, prototype-only employee session over the local HR data. */
-import { db } from '../data/db';
+import { hrmsStore } from './hrmsStore';
 
 const SESSION_KEY = 'orchasp-employee-session';
 const PASSWORDS_KEY = 'orchasp-employee-passwords';
@@ -25,7 +25,7 @@ function passwordFor(employee) {
 export const employeeAuthService = {
   login({ employeeId, password }) {
     const normalizedId = employeeId.trim().toUpperCase();
-    const employee = db.employees.find((item) =>
+    const employee = hrmsStore.getSnapshot().employees.find((item) =>
       employeeCode(item) === normalizedId || item.id.toUpperCase() === normalizedId
     );
 

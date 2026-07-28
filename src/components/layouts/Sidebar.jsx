@@ -1,5 +1,5 @@
 /** Renders responsive primary navigation and session controls. */
-import { NavLink  } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence  } from 'framer-motion';
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -15,6 +15,14 @@ export function Sidebar({
   onMobileClose,
 }) {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  /** Ends the HR session and always returns the person to the sign-in page. */
+  const handleLogout = () => {
+    logout();
+    onMobileClose();
+    navigate('/login', { replace: true });
+  };
 
   return (
     <>
@@ -116,7 +124,7 @@ export function Sidebar({
             )}
             {!collapsed && (
               <button
-                onClick={logout}
+                onClick={handleLogout}
                 className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-danger/10 hover:text-danger"
                 title={logoutItem.label}
               >
