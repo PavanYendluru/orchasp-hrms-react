@@ -1,5 +1,5 @@
 /** Combines operational HR metrics, activity, and draggable dashboard widgets. */
-import { useMemo, useState  } from 'react';
+import { useCallback, useMemo, useState  } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DndContext,
   PointerSensor,
@@ -46,44 +46,62 @@ function SortableWidget({ id, children }) {
 export function DashboardPage() {
   const data = useHrmsData();
   const navigate = useNavigate();
-  const [range, setRange] = useState('12');
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [widgets, setWidgets] = useState(['growth', 'attendance', 'payroll', 'distribution']);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
+  const isInRange = useCallback((date) => {
+    if (!date) return false;
+    return (!dateRange.start || date >= dateRange.start) && (!dateRange.end || date <= dateRange.end);
+  }, [dateRange]);
+
+  const filteredEmployees = useMemo(
+    () => data.employees.filter((employee) => isInRange(employee.hireDate)),
+    [data.employees, isInRange]
+  );
+  const filteredAttendance = useMemo(
+    () => data.attendance.filter((entry) => isInRange(entry.date)),
+    [data.attendance, isInRange]
+  );
+  const filteredPayroll = useMemo(
+    () => data.payroll.filter((item) => isInRange(`${item.month}-01`)),
+    [data.payroll, isInRange]
+  );
+
   const stats = useMemo(() => ({
-    totalEmployees: data.employees.length,
-    active: data.employees.filter((e) => e.status === 'active').length,
-    onLeave: data.employees.filter((e) => e.status === 'on-leave').length,
-    pendingLeaves: data.leaves.filter((l) => l.status === 'pending').length,
-    monthlyPayroll: data.payroll.filter((p) => p.month === '2025-06').reduce((s, p) => s + p.netSalary, 0),
-    assignedAssets: data.assets.filter((a) => a.status === 'assigned').length,
-  activeProjects: data.projects.filter((p) => p.status === 'active').length,
-  departments: data.departments.length,
-  birthdays: data.employees.filter((e) => {
+    totalEmployees: filteredEmployees.length,
+    active: filteredEmployees.filter((e) => e.status === 'active').length,
+    onLeave: filteredEmployees.filter((e) => e.status === 'on-leave').length,
+    pendingLeaves: data.leaves.filter((l) => l.status === 'pending' && isInRange(l.startDate)).length,
+    monthlyPayroll: filteredPayroll.reduce((s, p) => s + p.netSalary, 0),
+    assignedAssets: data.assets.filter((a) => a.status === 'assigned' && (!a.assignedDate || isInRange(a.assignedDate))).length,
+    activeProjects: data.projects.filter((p) => p.status === 'active').length,
+    departments: data.departments.length,
+    birthdays: filteredEmployees.filter((e) => {
     const m = moment(e.hireDate);
     return m.month() === moment().month();
   }),
-    topPerformers: [...data.employees].sort((a, b) => b.performanceScore - a.performanceScore).slice(0, 5),
-  }), [data]);
+    topPerformers: [...filteredEmployees].sort((a, b) => b.performanceScore - a.performanceScore).slice(0, 5),
+  }), [data, filteredEmployees, filteredPayroll, isInRange]);
 
   const growthData = useMemo(() => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return months.slice(-Number(range)).map((m, i) => ({
+    return months.map((m, i) => ({
       month: m,
-      employees: data.employees.filter((employee) => moment(employee.hireDate).month() <= i).length,
-      attrition: data.employees.filter((employee) => employee.status === 'terminated' && moment(employee.hireDate).month() === i).length,
+      employees: filteredEmployees.filter((employee) => moment(employee.hireDate).month() <= i).length,
+      attrition: filteredEmployees.filter((employee) => employee.status === 'terminated' && moment(employee.hireDate).month() === i).length,
     }));
-  }, [data.employees, range]);
+  }, [filteredEmployees]);
 
   const attendanceData = useMemo(() => {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
     return days.map((d, index) => ({
       day: d,
-      present: data.attendance.filter((entry) => entry.status === 'present' && moment(entry.date).isoWeekday() === index + 1).length,
-      late: data.attendance.filter((entry) => entry.status === 'late' && moment(entry.date).isoWeekday() === index + 1).length,
-      remote: data.attendance.filter((entry) => entry.status === 'remote' && moment(entry.date).isoWeekday() === index + 1).length,
+      present: filteredAttendance.filter((entry) => entry.status === 'present' && moment(entry.date).isoWeekday() === index + 1).length,
+      late: filteredAttendance.filter((entry) => entry.status === 'late' && moment(entry.date).isoWeekday() === index + 1).length,
+      remote: filteredAttendance.filter((entry) => entry.status === 'remote' && moment(entry.date).isoWeekday() === index + 1).length,
     }));
-  }, [data.attendance]);
+  }, [filteredAttendance]);
 
   const deptDistribution = useMemo(
     () => data.departments.map((d) => ({
@@ -117,9 +135,9 @@ export function DashboardPage() {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
     return {
       labels: months,
-      datasets: [{ label: 'Net Payroll', data: months.map((month, index) => data.payroll.filter((item) => item.month?.endsWith(String(index + 1).padStart(2, '0'))).reduce((sum, item) => sum + item.netSalary, 0)) }],
+      datasets: [{ label: 'Net Payroll', data: months.map((month, index) => filteredPayroll.filter((item) => item.month?.endsWith(String(index + 1).padStart(2, '0'))).reduce((sum, item) => sum + item.netSalary, 0)) }],
     };
-  }, [data.payroll]);
+  }, [filteredPayroll]);
 
   const timelineItems = useMemo(
     () => [
@@ -188,11 +206,11 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Dashboard" description="Overview of your organization's key metrics and activities" actions={<select aria-label="Dashboard date range" value={range} onChange={(event) => setRange(event.target.value)} className="input-base w-auto"><option value="6">Last 6 months</option><option value="12">Last 12 months</option></select>} />
+      <PageHeader title="Dashboard" description="Overview of your organization's key metrics and activities" actions={<div className="flex flex-wrap items-end gap-2"><label className="text-xs font-medium text-muted-foreground">From<input aria-label="Dashboard range start" type="date" value={dateRange.start} max={dateRange.end || undefined} onChange={(event) => setDateRange((range) => ({ ...range, start: event.target.value }))} className="input-base mt-1 h-9" /></label><label className="text-xs font-medium text-muted-foreground">To<input aria-label="Dashboard range end" type="date" value={dateRange.end} min={dateRange.start || undefined} onChange={(event) => setDateRange((range) => ({ ...range, end: event.target.value }))} className="input-base mt-1 h-9" /></label>{(dateRange.start || dateRange.end) && <button type="button" onClick={() => setDateRange({ start: '', end: '' })} className="h-9 rounded-lg px-3 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">Clear</button>}</div>} />
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <button type="button" onClick={() => navigate('/employees')} className="text-left"><StatCard index={0} label="Total Employees" value={formatCompactNumber(stats.totalEmployees)} icon={<PeopleAltOutlinedIcon className="h-5 w-5" />} trend="up" trendLabel="Live" accent="primary" /></button>
+        <button type="button" onClick={() => navigate('/employees')} className="text-left"><StatCard index={0} label={dateRange.start || dateRange.end ? 'Employees Hired' : 'Total Employees'} value={formatCompactNumber(stats.totalEmployees)} icon={<PeopleAltOutlinedIcon className="h-5 w-5" />} trend="up" trendLabel={dateRange.start || dateRange.end ? 'Selected range' : 'Live'} accent="primary" /></button>
         <button type="button" onClick={() => navigate('/leave')} className="text-left"><StatCard index={1} label="On Leave Today" value={stats.onLeave} icon={<EventAvailableOutlinedIcon className="h-5 w-5" />} trend="down" trendLabel="Live" accent="warning" /></button>
         <StatCard index={2} label="Monthly Payroll" value={formatCurrency(stats.monthlyPayroll)} icon={<PaymentsOutlinedIcon className="h-5 w-5" />} trend="up" trendLabel="2.4%" accent="success" />
         <button type="button" onClick={() => navigate('/assets')} className="text-left"><StatCard index={3} label="Assigned Assets" value={stats.assignedAssets} icon={<Inventory2OutlinedIcon className="h-5 w-5" />} trend="up" trendLabel="Live" accent="secondary" /></button>

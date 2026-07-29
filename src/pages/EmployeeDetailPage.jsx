@@ -6,8 +6,8 @@ import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import BusinessOutlinedIcon from '@mui/icons-material/BusinessOutlined';
+import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import moment from 'moment';
-import { db  } from '../data/db';
 import { Avatar  } from '../components/ui/Avatar';
 import { Badge  } from '../components/ui/Badge';
 import { Button  } from '../components/ui/Button';
@@ -16,6 +16,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent  } from '../components/ui/Tabs
 import { Timeline  } from '../components/common/Timeline';
 import { AreaChartCard, RadarChartCard  } from '../components/charts/Recharts';
 import { EmptyState  } from '../components/ui/EmptyState';
+import { Modal } from '../components/ui/Modal';
+import { FormField } from '../components/ui/Input';
+import { hrmsStore, useHrmsData } from '../services/hrmsStore';
+import { toast } from 'sonner';
 const statusVariant = {
   active: 'success',
   'on-leave': 'warning',
@@ -26,16 +30,19 @@ const statusVariant = {
 export function EmployeeDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const data = useHrmsData();
   const [activeTab, setActiveTab] = useState('profile');
+  const [assetAction, setAssetAction] = useState(null);
 
-  const employee = useMemo(() => db.employees.find((e) => e.id === id), [id]);
-  const department = useMemo(() => db.departments.find((d) => d.id === employee?.departmentId), [employee]);
-  const attendance = useMemo(() => db.attendance.filter((a) => a.employeeId === id), [id]);
-  const leaves = useMemo(() => db.leaves.filter((l) => l.employeeId === id), [id]);
-  const payroll = useMemo(() => db.payroll.filter((p) => p.employeeId === id), [id]);
-  const assets = useMemo(() => db.assets.filter((a) => a.assignedToId === id), [id]);
-  const projects = useMemo(() => db.projects.filter((p) => employee && p.memberIds.includes(employee.id)), [employee]);
-  const tasks = useMemo(() => db.tasks.filter((t) => t.assigneeId === id), [id]);
+  const employee = useMemo(() => data.employees.find((e) => e.id === id), [data.employees, id]);
+  const department = useMemo(() => data.departments.find((d) => d.id === employee?.departmentId), [data.departments, employee]);
+  const attendance = useMemo(() => data.attendance.filter((a) => a.employeeId === id), [data.attendance, id]);
+  const leaves = useMemo(() => data.leaves.filter((l) => l.employeeId === id), [data.leaves, id]);
+  const payroll = useMemo(() => data.payroll.filter((p) => p.employeeId === id), [data.payroll, id]);
+  const assets = useMemo(() => data.assets.filter((a) => a.assignedToId === id), [data.assets, id]);
+  const availableAssets = useMemo(() => data.assets.filter((a) => a.status === 'available'), [data.assets]);
+  const projects = useMemo(() => data.projects.filter((p) => employee && p.memberIds.includes(employee.id)), [data.projects, employee]);
+  const tasks = useMemo(() => data.tasks.filter((t) => t.assigneeId === id), [data.tasks, id]);
 
   if (!employee) {
     return (
@@ -211,7 +218,7 @@ export function EmployeeDetailPage() {
         </TabsContent>
 
         <TabsContent value="assets">
-          <Card><CardHeader><CardTitle>Assigned Assets</CardTitle></CardHeader><CardContent>
+          <Card><CardHeader><div className="flex flex-wrap items-center justify-between gap-3"><CardTitle>Assigned Assets</CardTitle><div className="flex gap-2"><Button variant="outline" size="sm" onClick={() => setAssetAction({ type: 'assign', assetId: '' })}>Assign Asset</Button><Button size="sm" onClick={() => setAssetAction({ type: 'add' })}><AddOutlinedIcon className="h-4 w-4" /> Add Asset</Button></div></div></CardHeader><CardContent>
             {assets.length === 0 ? <EmptyState title="No assets assigned" /> : (
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">{assets.map((a) => (
                   <div key={a.id} className="flex items-center justify-between rounded-lg border border-border p-3">
@@ -220,7 +227,7 @@ export function EmployeeDetailPage() {
                   </div>
                 ))}
               </div>
-            )}
+            )}<div className="mt-6 border-t border-border pt-4"><p className="mb-3 text-sm font-semibold text-foreground">Available Assets</p>{availableAssets.length ? <div className="grid grid-cols-1 gap-3 md:grid-cols-2">{availableAssets.map((asset) => <button type="button" key={asset.id} onClick={() => setAssetAction({ type: 'assign', assetId: asset.id })} className="flex items-center justify-between rounded-lg border border-border p-3 text-left transition-colors hover:bg-muted"><div><p className="text-sm font-medium text-foreground">{asset.name}</p><p className="text-xs text-muted-foreground">{asset.category} · {asset.serial}</p></div><span className="text-xs font-medium text-primary">Assign</span></button>)}</div> : <p className="text-sm text-muted-foreground">No available assets in inventory.</p>}</div>
           </CardContent></Card>
         </TabsContent>
 
@@ -264,6 +271,16 @@ export function EmployeeDetailPage() {
         </Card>
         </TabsContent>
       </Tabs>
+      <EmployeeAssetModal action={assetAction} employee={employee} availableAssets={availableAssets} onClose={() => setAssetAction(null)} />
     </div>
   );
+}
+
+function EmployeeAssetModal({ action, employee, availableAssets, onClose }) {
+  const [assetId, setAssetId] = useState(action?.assetId || '');
+  const [values, setValues] = useState({ name: '', category: '', serial: '', value: '' });
+  if (!action) return null;
+  const assign = (event) => { event.preventDefault(); if (!assetId) return toast.error('Select an available asset.'); hrmsStore.assets.assign(assetId, employee.id); toast.success('Asset assigned to employee.'); onClose(); };
+  const create = (event) => { event.preventDefault(); if (!values.name || !values.category || !values.serial || !values.value) return toast.error('Complete all asset fields.'); hrmsStore.assets.create({ ...values, value: Number(values.value), status: 'assigned', assignedToId: employee.id, assignedDate: new Date().toISOString().slice(0, 10) }); toast.success('New asset added and assigned.'); onClose(); };
+  return <Modal open onOpenChange={(open) => !open && onClose()} title={action.type === 'assign' ? `Assign asset to ${employee.firstName}` : `Add asset for ${employee.firstName}`} footer={<><Button variant="outline" onClick={onClose}>Cancel</Button><Button onClick={action.type === 'assign' ? assign : create}>{action.type === 'assign' ? 'Assign Asset' : 'Add & Assign'}</Button></>}><form onSubmit={action.type === 'assign' ? assign : create} className="grid gap-4">{action.type === 'assign' ? <FormField label="Available asset"><select autoFocus className="input-base" value={assetId} onChange={(event) => setAssetId(event.target.value)}><option value="">Select asset</option>{availableAssets.map((asset) => <option key={asset.id} value={asset.id}>{asset.name} — {asset.serial}</option>)}</select></FormField> : <>{[['Asset name', 'name'], ['Category', 'category'], ['Serial number', 'serial'], ['Value', 'value']].map(([label, field]) => <FormField key={field} label={label}><input autoFocus={field === 'name'} type={field === 'value' ? 'number' : 'text'} min={field === 'value' ? '0' : undefined} className="input-base" value={values[field]} onChange={(event) => setValues({ ...values, [field]: event.target.value })} /></FormField>)}</>}</form></Modal>;
 }

@@ -72,6 +72,15 @@ export const hrmsStore = {
       return imported.length;
     },
   },
+  departments: {
+    create(values) {
+      const data = read();
+      const department = { id: createId('dept'), budget: 0, color: '#2563eb', headId: null, ...values };
+      data.departments.unshift(department);
+      write(data);
+      return department;
+    },
+  },
   assets: {
     create(values) {
       const data = read();
