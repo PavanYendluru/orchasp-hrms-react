@@ -1,5 +1,6 @@
 /** Exposes delayed local APIs that mirror the future HTTP service boundary. */
 import { hrmsStore } from './hrmsStore';
+import { http } from './http';
 const getData = () => hrmsStore.getSnapshot();
 function delay(value, ms = 250) {
   return new Promise((resolve) => setTimeout(() => resolve(value), ms));
@@ -12,6 +13,9 @@ function paginate(items, page = 1, pageSize = 10) {
 
 export const api = {
   employees: {
+    create: async (values) => (await http.post('/admin/employees', values)).data,
+    update: async (id, values) => (await http.put(`/admin/employees/${id}`, values)).data,
+    remove: async (id) => http.delete(`/admin/employees/${id}`),
     list: (params = {}) => {
       let items = [...getData().employees];
       if (params?.search) {
@@ -26,12 +30,22 @@ export const api = {
       if (params?.departmentId) items = items.filter((e) => e.departmentId === params.departmentId);
       return delay(paginate(items, params?.page, params?.pageSize));
     },
-    all: () => delay(getData().employees),
-    get: (id) => delay(getData().employees.find((e) => e.id === id) || null),
+    all: async (params = {}) => (await http.get('/employees', { params })).data,
+    get: async (id) => (await http.get(`/employees/${id}`)).data,
   },
   departments: {
-    list: () => delay(getData().departments),
-    get: (id) => delay(getData().departments.find((d) => d.id === id) || null),
+    list: async () => (await http.get('/departments')).data,
+    create: async (values) => (await http.post('/admin/departments', values)).data,
+    update: async (id, values) => (await http.put(`/admin/departments/${id}`, values)).data,
+    remove: async (id) => http.delete(`/admin/departments/${id}`),
+    get: async (id) => {
+      const { data } = await http.get('/departments');
+      return data.find((item) => item.id === id) || null;
+    },
+  },
+  profile: {
+    me: async () => (await http.get('/me')).data,
+    update: async (values) => (await http.patch('/me/profile', values)).data,
   },
   attendance: {
     list: () => delay(getData().attendance),
@@ -56,12 +70,14 @@ export const api = {
     forEmployee: (employeeId) => delay(getData().payroll.filter((p) => p.employeeId === employeeId)),
   },
   assets: {
-    list: () => delay(getData().assets),
+    list: async () => (await http.get('/assets')).data,
+    create: async (values) => (await http.post('/admin/assets', values)).data,
+    update: async (id, values) => (await http.put(`/admin/assets/${id}`, values)).data,
+    remove: async (id) => http.delete(`/admin/assets/${id}`),
+    mine: async () => (await http.get('/me/assets')).data,
     forEmployee: (employeeId) => delay(getData().assets.filter((a) => a.assignedToId === employeeId)),
-    assign: ({ assetId, employeeId }) => {
-      const asset = hrmsStore.assets.assign(assetId, employeeId);
-      return delay(asset);
-    },
+    assign: async ({ assetId, employeeId }) => (await http.post(`/admin/assets/${assetId}/assign`, { employeeId })).data,
+    returnAsset: async (assetId) => (await http.post(`/admin/assets/${assetId}/return`)).data,
   },
   projects: {
     list: () => delay(getData().projects),
@@ -81,6 +97,7 @@ export const api = {
     list: () => delay(getData().holidays),
   },
   stats: {
+    dashboard: async () => (await http.get('/dashboard/overview')).data,
     overview: () =>
       delay({
         totalEmployees: getData().employees.length,

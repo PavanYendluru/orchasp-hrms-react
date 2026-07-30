@@ -1,29 +1,16 @@
-/**
- * Separates self-service contact details from HR-managed employment fields.
- * Employees can update personal information without altering their job record.
- */
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
-import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { FormField } from '../../components/ui/Input';
-import { useEmployeeAuth } from '../../context/EmployeeAuthContext';
-import { hrmsStore, useHrmsData } from '../../services/hrmsStore';
+import { api } from '../../services/api';
 import { toast } from 'sonner';
 
+/** Displays profile data returned by the employee's authenticated backend account. */
 export function EmployeeProfilePage() {
-  const { employee: sessionEmployee } = useEmployeeAuth();
-  const data = useHrmsData();
-  const employee = data.employees.find((item) => item.id === sessionEmployee?.id) || sessionEmployee;
-  const department = data.departments.find((item) => item.id === employee.departmentId);
-  const [details, setDetails] = useState(() => ({ phone: employee.phone || '', address: employee.address || '', emergencyContact: employee.emergencyContact || '', profilePicture: employee.profilePicture || '' }));
-  const workFields = useMemo(() => [
-    ['Employee ID', `EMP-${employee.id.replace(/\D/g, '').padStart(3, '0')}`], ['Work email', employee.email], ['Department', department?.name || 'Not assigned'], ['Job title', employee.jobTitle], ['Location', employee.location], ['Employment type', employee.employmentType], ['Hire date', employee.hireDate],
-  ], [employee, department]);
-
-  /** Saves only the fields an employee is allowed to manage themselves. */
-  const save = (event) => { event.preventDefault(); hrmsStore.employees.update(employee.id, details); toast.success('Personal profile updated.'); };
-
-  return <div className="space-y-5"><div><h1 className="font-display text-2xl font-bold text-foreground">My profile</h1><p className="mt-1 text-sm text-muted-foreground">Update your personal contact details. HR manages employment information.</p></div><div className="grid gap-5 lg:grid-cols-[1fr_1.4fr]"><Card><CardHeader><div className="flex items-center gap-4"><div className="h-14 w-14 overflow-hidden rounded-full bg-primary text-center text-xl font-bold leading-[3.5rem] text-primary-foreground">{details.profilePicture ? <img src={details.profilePicture} alt={`${employee.firstName} ${employee.lastName}`} className="h-full w-full object-cover" /> : <>{employee.firstName?.[0]}{employee.lastName?.[0]}</>}</div><div><CardTitle>{employee.firstName} {employee.lastName}</CardTitle><p className="text-sm text-muted-foreground">{employee.jobTitle}</p></div><Badge variant="success" className="ml-auto capitalize">{employee.status}</Badge></div></CardHeader><CardContent className="grid gap-4 border-t border-border pt-5 sm:grid-cols-2">{workFields.map(([label, value]) => <div key={label}><p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p><p className="mt-1 text-sm text-foreground">{value || '—'}</p></div>)}</CardContent></Card>
-    <Card><CardHeader><CardTitle>Personal contact details</CardTitle></CardHeader><CardContent><form className="space-y-4" onSubmit={save}><FormField label="Phone"><input className="input-base" value={details.phone} onChange={(event) => setDetails({ ...details, phone: event.target.value })} required /></FormField><FormField label="Address"><input className="input-base" value={details.address} onChange={(event) => setDetails({ ...details, address: event.target.value })} /></FormField><FormField label="Emergency Contact"><input className="input-base" value={details.emergencyContact} onChange={(event) => setDetails({ ...details, emergencyContact: event.target.value })} placeholder="Name · relationship · phone" /></FormField><FormField label="Profile Picture URL"><input className="input-base" value={details.profilePicture} onChange={(event) => setDetails({ ...details, profilePicture: event.target.value })} placeholder="https://…" /></FormField><div className="flex justify-end"><Button type="submit">Save personal details</Button></div></form></CardContent></Card></div></div>;
+  const [employee, setEmployee] = useState(null);
+  const [details, setDetails] = useState({ phone: '', address: '', emergencyContact: '', profilePicture: '' });
+  useEffect(() => { api.profile.me().then((user) => api.employees.get(user.employeeId)).then((data) => { setEmployee(data); setDetails({ phone: data.phone || '', address: data.address || '', emergencyContact: data.emergencyContact || '', profilePicture: data.profilePicture || '' }); }).catch(() => toast.error('Unable to load your profile.')); }, []);
+  const save = async (event) => { event.preventDefault(); try { const updated = await api.profile.update(details); setEmployee(updated); toast.success('Personal profile updated.'); } catch (error) { toast.error(error.response?.data?.message || 'Unable to save profile.'); } };
+  if (!employee) return <p className="p-6 text-sm text-muted-foreground">Loading profile…</p>;
+  return <div className="space-y-5"><div><h1 className="font-display text-2xl font-bold text-foreground">My profile</h1><p className="mt-1 text-sm text-muted-foreground">Update your personal contact details. HR manages employment information.</p></div><div className="grid gap-5 lg:grid-cols-2"><Card><CardHeader><CardTitle>{employee.firstName} {employee.lastName}</CardTitle></CardHeader><CardContent className="space-y-3 text-sm"><p><b>Employee ID:</b> {employee.employeeId}</p><p><b>Work email:</b> {employee.email}</p><p><b>Department:</b> {employee.departmentName || 'Not assigned'}</p><p><b>Job title:</b> {employee.jobTitle}</p><p><b>Location:</b> {employee.location}</p><p><b>Hire date:</b> {employee.hireDate}</p></CardContent></Card><Card><CardHeader><CardTitle>Personal contact details</CardTitle></CardHeader><CardContent><form className="space-y-4" onSubmit={save}><FormField label="Phone"><input required className="input-base" value={details.phone} onChange={(e) => setDetails({ ...details, phone: e.target.value })} /></FormField><FormField label="Address"><input className="input-base" value={details.address} onChange={(e) => setDetails({ ...details, address: e.target.value })} /></FormField><FormField label="Emergency Contact"><input className="input-base" value={details.emergencyContact} onChange={(e) => setDetails({ ...details, emergencyContact: e.target.value })} /></FormField><FormField label="Profile Picture URL"><input className="input-base" value={details.profilePicture} onChange={(e) => setDetails({ ...details, profilePicture: e.target.value })} /></FormField><Button type="submit">Save personal details</Button></form></CardContent></Card></div></div>;
 }

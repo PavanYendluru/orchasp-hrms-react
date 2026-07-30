@@ -1,5 +1,5 @@
 /** Combines operational HR metrics, activity, and draggable dashboard widgets. */
-import { useCallback, useMemo, useState  } from 'react';
+import { useCallback, useEffect, useMemo, useState  } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DndContext,
   PointerSensor,
@@ -27,6 +27,7 @@ import { ApexRadialChart, ApexHeatmapChart  } from '../components/charts/ApexCha
 import { ChartJSLine  } from '../components/charts/ChartJS';
 import { formatCurrency, formatCompactNumber  } from '../lib/utils';
 import { useHrmsData } from '../services/hrmsStore';
+import { api } from '../services/api';
 import moment from 'moment';
 
 function SortableWidget({ id, children }) {
@@ -44,11 +45,45 @@ function SortableWidget({ id, children }) {
 }
 
 export function DashboardPage() {
-  const data = useHrmsData();
+  const localData = useHrmsData();
   const navigate = useNavigate();
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [widgets, setWidgets] = useState(['growth', 'attendance', 'payroll', 'distribution']);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+
+  const [dbData, setDbData] = useState({ employees: [], departments: [], assets: [], overview: null });
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadBackendData() {
+      try {
+        const [employees, departments, assets, overview] = await Promise.all([
+          api.employees.all().catch(() => []),
+          api.departments.list().catch(() => []),
+          api.assets.list().catch(() => []),
+          api.stats.dashboard().catch(() => null),
+        ]);
+        if (isMounted) {
+          setDbData({ employees, departments, assets, overview });
+        }
+      } catch (err) {
+        console.error('Failed loading backend dashboard stats:', err);
+      }
+    }
+    loadBackendData();
+    return () => { isMounted = false; };
+  }, []);
+
+  const data = useMemo(() => ({
+    employees: dbData.employees.length > 0 ? dbData.employees : localData.employees,
+    departments: dbData.departments.length > 0 ? dbData.departments : localData.departments,
+    assets: dbData.assets.length > 0 ? dbData.assets : localData.assets,
+    attendance: localData.attendance,
+    leaves: localData.leaves,
+    payroll: localData.payroll,
+    projects: localData.projects,
+    announcements: localData.announcements,
+  }), [dbData, localData]);
 
   const isInRange = useCallback((date) => {
     if (!date) return false;
@@ -68,21 +103,27 @@ export function DashboardPage() {
     [data.payroll, isInRange]
   );
 
-  const stats = useMemo(() => ({
-    totalEmployees: filteredEmployees.length,
-    active: filteredEmployees.filter((e) => e.status === 'active').length,
-    onLeave: filteredEmployees.filter((e) => e.status === 'on-leave').length,
-    pendingLeaves: data.leaves.filter((l) => l.status === 'pending' && isInRange(l.startDate)).length,
-    monthlyPayroll: filteredPayroll.reduce((s, p) => s + p.netSalary, 0),
-    assignedAssets: data.assets.filter((a) => a.status === 'assigned' && (!a.assignedDate || isInRange(a.assignedDate))).length,
-    activeProjects: data.projects.filter((p) => p.status === 'active').length,
-    departments: data.departments.length,
-    birthdays: filteredEmployees.filter((e) => {
-    const m = moment(e.hireDate);
-    return m.month() === moment().month();
-  }),
-    topPerformers: [...filteredEmployees].sort((a, b) => b.performanceScore - a.performanceScore).slice(0, 5),
-  }), [data, filteredEmployees, filteredPayroll, isInRange]);
+  const stats = useMemo(() => {
+    const totalEmployees = dbData.overview?.totalEmployees ?? filteredEmployees.length;
+    const active = dbData.overview?.activeEmployees ?? filteredEmployees.filter((e) => e.status === 'ACTIVE' || e.status === 'active').length;
+    const onLeave = dbData.overview?.onLeaveEmployees ?? filteredEmployees.filter((e) => e.status === 'ON_LEAVE' || e.status === 'on-leave').length;
+    const pendingLeaves = dbData.overview?.pendingLeaveRequests ?? data.leaves.filter((l) => l.status === 'pending' && isInRange(l.startDate)).length;
+    const totalDepartments = dbData.overview?.totalDepartments ?? data.departments.length;
+    const assignedAssets = dbData.overview?.assignedAssets ?? data.assets.filter((a) => a.status === 'ASSIGNED' || a.status === 'assigned').length;
+
+    return {
+      totalEmployees,
+      active,
+      onLeave,
+      pendingLeaves,
+      monthlyPayroll: filteredPayroll.reduce((s, p) => s + p.netSalary, 0),
+      assignedAssets,
+      activeProjects: data.projects.filter((p) => p.status === 'active').length,
+      departments: totalDepartments,
+      birthdays: filteredEmployees.filter((e) => e.hireDate && moment(e.hireDate).month() === moment().month()),
+      topPerformers: [...filteredEmployees].sort((a, b) => (b.performanceScore || 0) - (a.performanceScore || 0)).slice(0, 5),
+    };
+  }, [dbData.overview, filteredEmployees, filteredPayroll, data, isInRange]);
 
   const growthData = useMemo(() => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

@@ -34,15 +34,15 @@ export function EmployeeDetailPage() {
   const [activeTab, setActiveTab] = useState('profile');
   const [assetAction, setAssetAction] = useState(null);
 
-  const employee = useMemo(() => data.employees.find((e) => e.id === id), [data.employees, id]);
-  const department = useMemo(() => data.departments.find((d) => d.id === employee?.departmentId), [data.departments, employee]);
-  const attendance = useMemo(() => data.attendance.filter((a) => a.employeeId === id), [data.attendance, id]);
-  const leaves = useMemo(() => data.leaves.filter((l) => l.employeeId === id), [data.leaves, id]);
-  const payroll = useMemo(() => data.payroll.filter((p) => p.employeeId === id), [data.payroll, id]);
-  const assets = useMemo(() => data.assets.filter((a) => a.assignedToId === id), [data.assets, id]);
-  const availableAssets = useMemo(() => data.assets.filter((a) => a.status === 'available'), [data.assets]);
+  const employee = useMemo(() => data.employees.find((e) => String(e.id) === String(id)), [data.employees, id]);
+  const department = useMemo(() => data.departments.find((d) => String(d.id) === String(employee?.departmentId)), [data.departments, employee]);
+  const attendance = useMemo(() => data.attendance.filter((a) => String(a.employeeId) === String(id)), [data.attendance, id]);
+  const leaves = useMemo(() => data.leaves.filter((l) => String(l.employeeId) === String(id)), [data.leaves, id]);
+  const payroll = useMemo(() => data.payroll.filter((p) => String(p.employeeId) === String(id)), [data.payroll, id]);
+  const assets = useMemo(() => data.assets.filter((a) => String(a.assignedToId) === String(id)), [data.assets, id]);
+  const availableAssets = useMemo(() => data.assets.filter((a) => a.status === 'available' || a.status === 'AVAILABLE'), [data.assets]);
   const projects = useMemo(() => data.projects.filter((p) => employee && p.memberIds.includes(employee.id)), [data.projects, employee]);
-  const tasks = useMemo(() => data.tasks.filter((t) => t.assigneeId === id), [data.tasks, id]);
+  const tasks = useMemo(() => data.tasks.filter((t) => String(t.assigneeId) === String(id)), [data.tasks, id]);
 
   if (!employee) {
     return (

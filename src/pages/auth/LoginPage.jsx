@@ -22,10 +22,14 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useFormWithYup(schema);
 
-  const onSubmit = (data) => {
-    login(data.email);
-    toast.success('Welcome back!');
-    navigate('/dashboard');
+  const onSubmit = async (data) => {
+    try {
+      await login({ ...data, rememberMe: Boolean(data.rememberMe) });
+      toast.success('Welcome back!');
+      navigate('/dashboard');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Unable to sign in.');
+    }
   };
 
   return (
@@ -43,7 +47,7 @@ export function LoginPage() {
           </div>
         </FormField>
         <div className="flex items-center justify-between text-sm">
-          <label className="flex items-center gap-2 text-muted-foreground"><input type="checkbox" className="rounded border-border" /> Remember me</label>
+          <label className="flex items-center gap-2 text-muted-foreground"><input type="checkbox" {...register('rememberMe')} className="rounded border-border" /> Remember me</label>
           <button type="button" onClick={() => navigate('/forgot-password')} className="font-medium text-primary hover:underline">Forgot password?</button>
         </div>
         <Button type="submit" size="lg" className="w-full">Sign In</Button>

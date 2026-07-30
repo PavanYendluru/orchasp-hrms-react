@@ -5,8 +5,8 @@ const EmployeeAuthContext = createContext(null);
 
 export function EmployeeAuthProvider({ children }) {
   const [session, setSession] = useState(() => employeeAuthService.getSession());
-  const login = useCallback((credentials) => {
-    const nextSession = employeeAuthService.login(credentials);
+  const login = useCallback(async (credentials) => {
+    const nextSession = await employeeAuthService.login(credentials);
     setSession(nextSession);
     return nextSession;
   }, []);
