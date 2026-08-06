@@ -1,32 +1,24 @@
-/** Combines operational HR metrics, activity, and draggable dashboard widgets. */
-import { useCallback, useEffect, useMemo, useState  } from 'react';
+/** Combines operational HR metrics, activity, and draggable dashboard widgets with live data. */
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DndContext,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
- } from '@dnd-kit/core';
-import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy  } from '@dnd-kit/sortable';
-import { CSS  } from '@dnd-kit/utilities';
+import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
+import HowToRegOutlinedIcon from '@mui/icons-material/HowToRegOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
-import TrendingUpOutlinedIcon from '@mui/icons-material/TrendingUpOutlined';
-import { PageHeader  } from '../components/common/PageHeader';
-import { StatCard  } from '../components/common/StatCard';
-import { Card, CardHeader, CardTitle, CardContent  } from '../components/ui/Card';
-import { Badge  } from '../components/ui/Badge';
-import { Avatar  } from '../components/ui/Avatar';
-import { Timeline  } from '../components/common/Timeline';
-import { AreaChartCard, BarChartCard, PieChartCard, RadarChartCard  } from '../components/charts/Recharts';
-import { ApexRadialChart, ApexHeatmapChart  } from '../components/charts/ApexCharts';
-import { ChartJSLine  } from '../components/charts/ChartJS';
-import { formatCurrency, formatCompactNumber  } from '../lib/utils';
-import { useHrmsData } from '../services/hrmsStore';
+import { PageHeader } from '../components/common/PageHeader';
+import { StatCard } from '../components/common/StatCard';
+import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
+import { Avatar } from '../components/ui/Avatar';
+import { Timeline } from '../components/common/Timeline';
+import { Spinner } from '../components/ui/Spinner';
+import { formatCurrency, formatCompactNumber } from '../lib/utils';
 import { api } from '../services/api';
 import moment from 'moment';
 
@@ -45,151 +37,73 @@ function SortableWidget({ id, children }) {
 }
 
 export function DashboardPage() {
-  const localData = useHrmsData();
   const navigate = useNavigate();
-  const [dateRange, setDateRange] = useState({ start: '', end: '' });
-  const [widgets, setWidgets] = useState(['growth', 'attendance', 'payroll', 'distribution']);
+  const [widgets, setWidgets] = useState(['stats', 'activities', 'birthdays']);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+  const [currentTime, setCurrentTime] = useState(moment());
+  const [hrDashboard, setHrDashboard] = useState(null);
+  const [birthdays, setBirthdays] = useState([]);
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const [dbData, setDbData] = useState({ employees: [], departments: [], assets: [], overview: null });
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(moment()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
-    async function loadBackendData() {
+    async function loadDashboardData() {
+      setLoading(true);
+      setError(null);
       try {
-        const [employees, departments, assets, overview] = await Promise.all([
-          api.employees.all().catch(() => []),
-          api.departments.list().catch(() => []),
-          api.assets.list().catch(() => []),
-          api.stats.dashboard().catch(() => null),
+        const [hrData, bdays, acts] = await Promise.all([
+          api.dashboard.hr(),
+          api.dashboard.birthdays(),
+          api.dashboard.activities(),
         ]);
         if (isMounted) {
-          setDbData({ employees, departments, assets, overview });
+          setHrDashboard(hrData);
+          setBirthdays(bdays || []);
+          setActivities(acts || []);
         }
       } catch (err) {
-        console.error('Failed loading backend dashboard stats:', err);
+        console.error('Failed loading dashboard data:', err);
+        setError('Failed to load dashboard data. Please ensure the backend server is running.');
+      } finally {
+        if (isMounted) setLoading(false);
       }
     }
-    loadBackendData();
+    loadDashboardData();
     return () => { isMounted = false; };
   }, []);
 
-  const data = useMemo(() => ({
-    employees: dbData.employees.length > 0 ? dbData.employees : localData.employees,
-    departments: dbData.departments.length > 0 ? dbData.departments : localData.departments,
-    assets: dbData.assets.length > 0 ? dbData.assets : localData.assets,
-    attendance: localData.attendance,
-    leaves: localData.leaves,
-    payroll: localData.payroll,
-    projects: localData.projects,
-    announcements: localData.announcements,
-  }), [dbData, localData]);
+  const stats = useMemo(() => ({
+    totalEmployees: hrDashboard?.totalEmployees ?? 0,
+    active: hrDashboard?.activeEmployees ?? 0,
+    present: hrDashboard?.presentEmployees ?? 0,
+    absent: hrDashboard?.absentEmployees ?? 0,
+    onLeave: hrDashboard?.onLeave ?? 0,
+    pendingLeaves: hrDashboard?.pendingLeaves ?? 0,
+    approvedLeaves: hrDashboard?.approvedLeaves ?? 0,
+    rejectedLeaves: hrDashboard?.rejectedLeaves ?? 0,
+    monthlyPayroll: hrDashboard?.monthlyPayroll ?? 0,
+    assignedAssets: hrDashboard?.assignedAssets ?? 0,
+    departments: hrDashboard?.totalDepartments ?? 0,
+    totalAssets: hrDashboard?.totalAssets ?? 0,
+    activeProjects: hrDashboard?.activeProjects ?? 0,
+  }), [hrDashboard]);
 
-  const isInRange = useCallback((date) => {
-    if (!date) return false;
-    return (!dateRange.start || date >= dateRange.start) && (!dateRange.end || date <= dateRange.end);
-  }, [dateRange]);
-
-  const filteredEmployees = useMemo(
-    () => data.employees.filter((employee) => isInRange(employee.hireDate)),
-    [data.employees, isInRange]
-  );
-  const filteredAttendance = useMemo(
-    () => data.attendance.filter((entry) => isInRange(entry.date)),
-    [data.attendance, isInRange]
-  );
-  const filteredPayroll = useMemo(
-    () => data.payroll.filter((item) => isInRange(`${item.month}-01`)),
-    [data.payroll, isInRange]
-  );
-
-  const stats = useMemo(() => {
-    const totalEmployees = dbData.overview?.totalEmployees ?? filteredEmployees.length;
-    const active = dbData.overview?.activeEmployees ?? filteredEmployees.filter((e) => e.status === 'ACTIVE' || e.status === 'active').length;
-    const onLeave = dbData.overview?.onLeaveEmployees ?? filteredEmployees.filter((e) => e.status === 'ON_LEAVE' || e.status === 'on-leave').length;
-    const pendingLeaves = dbData.overview?.pendingLeaveRequests ?? data.leaves.filter((l) => l.status === 'pending' && isInRange(l.startDate)).length;
-    const totalDepartments = dbData.overview?.totalDepartments ?? data.departments.length;
-    const assignedAssets = dbData.overview?.assignedAssets ?? data.assets.filter((a) => a.status === 'ASSIGNED' || a.status === 'assigned').length;
-
-    return {
-      totalEmployees,
-      active,
-      onLeave,
-      pendingLeaves,
-      monthlyPayroll: filteredPayroll.reduce((s, p) => s + p.netSalary, 0),
-      assignedAssets,
-      activeProjects: data.projects.filter((p) => p.status === 'active').length,
-      departments: totalDepartments,
-      birthdays: filteredEmployees.filter((e) => e.hireDate && moment(e.hireDate).month() === moment().month()),
-      topPerformers: [...filteredEmployees].sort((a, b) => (b.performanceScore || 0) - (a.performanceScore || 0)).slice(0, 5),
-    };
-  }, [dbData.overview, filteredEmployees, filteredPayroll, data, isInRange]);
-
-  const growthData = useMemo(() => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return months.map((m, i) => ({
-      month: m,
-      employees: filteredEmployees.filter((employee) => moment(employee.hireDate).month() <= i).length,
-      attrition: filteredEmployees.filter((employee) => employee.status === 'terminated' && moment(employee.hireDate).month() === i).length,
-    }));
-  }, [filteredEmployees]);
-
-  const attendanceData = useMemo(() => {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-    return days.map((d, index) => ({
-      day: d,
-      present: filteredAttendance.filter((entry) => entry.status === 'present' && moment(entry.date).isoWeekday() === index + 1).length,
-      late: filteredAttendance.filter((entry) => entry.status === 'late' && moment(entry.date).isoWeekday() === index + 1).length,
-      remote: filteredAttendance.filter((entry) => entry.status === 'remote' && moment(entry.date).isoWeekday() === index + 1).length,
-    }));
-  }, [filteredAttendance]);
-
-  const deptDistribution = useMemo(
-    () => data.departments.map((d) => ({
-      name: d.name,
-      value: data.employees.filter((e) => e.departmentId === d.id).length,
+  const timelineItems = useMemo(() =>
+    activities.map((a) => ({
+      id: String(a.id),
+      title: a.description || a.activityType,
+      description: `${a.employeeName} - ${a.activityType.replace(/_/g, ' ')}`,
+      time: moment(a.createdAt).fromNow(),
+      color: 'primary',
     })),
-    [data.departments, data.employees]
-  );
-
-  const radarData = useMemo(
-    () => [
-      { subject: 'Hiring', value: 78, fullMark: 100 },
-      { subject: 'Retention', value: 85, fullMark: 100 },
-      { subject: 'Engagement', value: 72, fullMark: 100 },
-      { subject: 'Performance', value: 88, fullMark: 100 },
-      { subject: 'Training', value: 65, fullMark: 100 },
-      { subject: 'Diversity', value: 80, fullMark: 100 },
-    ],
-    []
-  );
-
-  const heatmapData = useMemo(() => {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return days.map((day) => ({
-      name: day,
-      data: ['9am', '11am', '1pm', '3pm', '5pm'].map((hour, index) => ({ x: hour, y: data.attendance.filter((entry) => moment(entry.date).format('ddd') === day).length * (index + 1) })),
-    }));
-  }, [data.attendance]);
-
-  const payrollTrend = useMemo(() => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
-    return {
-      labels: months,
-      datasets: [{ label: 'Net Payroll', data: months.map((month, index) => filteredPayroll.filter((item) => item.month?.endsWith(String(index + 1).padStart(2, '0'))).reduce((sum, item) => sum + item.netSalary, 0)) }],
-    };
-  }, [filteredPayroll]);
-
-  const timelineItems = useMemo(
-    () => [
-      { id: '1', title: 'New employee onboarded', description: 'Sophia Patel joined Engineering', time: '2h ago', color: 'success' },
-      { id: '2', title: 'Leave request submitted', description: 'Liam Johnson applied for annual leave', time: '4h ago', color: 'primary' },
-      { id: '3', title: 'Payroll processed', description: 'June payroll for 60 employees', time: '6h ago', color: 'success' },
-      { id: '4', title: 'Asset returned', description: 'Laptop SN-48213 returned by Ava Martinez', time: '1d ago', color: 'warning' },
-      { id: '5', title: 'Performance review scheduled', description: 'Q2 reviews start next week', time: '2d ago', color: 'secondary' },
-    ],
-    []
-  );
+  [activities]);
 
   const handleDragEnd = (e) => {
     const { active, over } = e;
@@ -202,44 +116,85 @@ export function DashboardPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center py-20">
+        <Spinner className="h-8 w-8" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Dashboard" description="Overview of your organization's key metrics and activities" />
+        <Card>
+          <CardContent className="p-8 text-center">
+            <p className="text-danger">{error}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const widgetMap = {
-    growth: (
+    stats: (
       <Card className="col-span-1 lg:col-span-2">
         <CardHeader>
-          <CardTitle>Employee Growth</CardTitle>
+          <CardTitle>Live Date & Time</CardTitle>
         </CardHeader>
         <CardContent>
-          <AreaChartCard data={growthData} xKey="month" series={[{ key: 'employees', name: 'Employees', color: '#2563eb' }, { key: 'attrition', name: 'Attrition', color: '#dc2626' }]} />
+  <div className="grid grid-cols-2 gap-4">
+    <div className="rounded-lg bg-muted/30 p-4 text-center">
+      ...
+    </div>
+
+    <div className="rounded-lg bg-muted/30 p-4 text-center">
+      ...
+    </div>
+  </div>
+</CardContent>
+      </Card>
+    ),
+    activities: (
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Activity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {timelineItems.length > 0 ? (
+            <Timeline items={timelineItems} />
+          ) : (
+            <p className="text-sm text-muted-foreground">No recent activities.</p>
+          )}
         </CardContent>
       </Card>
     ),
-    attendance: (
+    birthdays: (
       <Card>
         <CardHeader>
-          <CardTitle>Weekly Attendance</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <CakeOutlinedIcon className="h-4 w-4 text-secondary" /> Upcoming Birthdays
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <BarChartCard data={attendanceData} xKey="day" series={[{ key: 'present', name: 'Present', color: '#16a34a' }, { key: 'late', name: 'Late', color: '#ea580c' }, { key: 'remote', name: 'Remote', color: '#2563eb' }]} />
-        </CardContent>
-      </Card>
-    ),
-    payroll: (
-      <Card>
-        <CardHeader>
-          <CardTitle>Payroll Trend</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ChartJSLine labels={payrollTrend.labels} datasets={payrollTrend.datasets} />
-        </CardContent>
-      </Card>
-    ),
-    distribution: (
-      <Card>
-        <CardHeader>
-          <CardTitle>Department Distribution</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <PieChartCard data={deptDistribution} />
+        <CardContent className="space-y-3">
+          {birthdays.length > 0 ? birthdays.slice(0, 5).map((emp) => (
+            <div key={emp.id} className="flex items-center gap-3">
+              <Avatar
+                name={`${emp.firstName} ${emp.lastName}`}
+                src={emp.profilePicture}
+                size="sm"
+              />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">{emp.firstName} {emp.lastName}</p>
+                <p className="text-xs text-muted-foreground">{emp.departmentName}{emp.jobTitle ? ` · ${emp.jobTitle}` : ''}</p>
+              </div>
+              <Badge variant="secondary">{moment(emp.dateOfBirth).format('MMM D')}</Badge>
+              <Badge variant="primary">{emp.daysRemaining > 0 ? `${emp.daysRemaining}d` : 'Today!'}</Badge>
+            </div>
+          )) : (
+            <p className="text-sm text-muted-foreground">No upcoming birthdays.</p>
+          )}
         </CardContent>
       </Card>
     ),
@@ -247,44 +202,55 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Dashboard" description="Overview of your organization's key metrics and activities" actions={<div className="flex flex-wrap items-end gap-2"><label className="text-xs font-medium text-muted-foreground">From<input aria-label="Dashboard range start" type="date" value={dateRange.start} max={dateRange.end || undefined} onChange={(event) => setDateRange((range) => ({ ...range, start: event.target.value }))} className="input-base mt-1 h-9" /></label><label className="text-xs font-medium text-muted-foreground">To<input aria-label="Dashboard range end" type="date" value={dateRange.end} min={dateRange.start || undefined} onChange={(event) => setDateRange((range) => ({ ...range, end: event.target.value }))} className="input-base mt-1 h-9" /></label>{(dateRange.start || dateRange.end) && <button type="button" onClick={() => setDateRange({ start: '', end: '' })} className="h-9 rounded-lg px-3 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground">Clear</button>}</div>} />
-
-      {/* Stat cards */}
+      <PageHeader
+        title="Dashboard"
+        description="Overview of your organization's key metrics and activities"
+        actions={
+          <div className="text-right">
+            <p className="text-sm text-muted-foreground">{currentTime.format('dddd, MMMM D, YYYY')}</p>
+            <p className="text-xs text-muted-foreground">{currentTime.format('h:mm:ss A')}</p>
+          </div>
+        }
+      />
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <button type="button" onClick={() => navigate('/employees')} className="text-left"><StatCard index={0} label={dateRange.start || dateRange.end ? 'Employees Hired' : 'Total Employees'} value={formatCompactNumber(stats.totalEmployees)} icon={<PeopleAltOutlinedIcon className="h-5 w-5" />} trend="up" trendLabel={dateRange.start || dateRange.end ? 'Selected range' : 'Live'} accent="primary" /></button>
-        <button type="button" onClick={() => navigate('/leave')} className="text-left"><StatCard index={1} label="On Leave Today" value={stats.onLeave} icon={<EventAvailableOutlinedIcon className="h-5 w-5" />} trend="down" trendLabel="Live" accent="warning" /></button>
-        <StatCard index={2} label="Monthly Payroll" value={formatCurrency(stats.monthlyPayroll)} icon={<PaymentsOutlinedIcon className="h-5 w-5" />} trend="up" trendLabel="2.4%" accent="success" />
-        <button type="button" onClick={() => navigate('/assets')} className="text-left"><StatCard index={3} label="Assigned Assets" value={stats.assignedAssets} icon={<Inventory2OutlinedIcon className="h-5 w-5" />} trend="up" trendLabel="Live" accent="secondary" /></button>
+        <button type="button" onClick={() => navigate('/employees')} className="text-left">
+          <StatCard label="Total Employees" value={formatCompactNumber(stats.totalEmployees)} icon={<PeopleAltOutlinedIcon className="h-5 w-5" />} trend={stats.active > 0 ? 'up' : 'neutral'} trendLabel={`${stats.active} active`} accent="primary" />
+        </button>
+        <button type="button" onClick={() => navigate('/attendance')} className="text-left">
+          <StatCard label="Present Today" value={stats.present} icon={<HowToRegOutlinedIcon className="h-5 w-5" />} trend="up" trendLabel={`${stats.absent} absent`} accent="success" />
+        </button>
+        <button type="button" onClick={() => navigate('/leave')} className="text-left">
+          <StatCard label="On Leave" value={stats.onLeave} icon={<EventAvailableOutlinedIcon className="h-5 w-5" />} trend="down" trendLabel={`${stats.pendingLeaves} pending`} accent="warning" />
+        </button>
+        <button type="button" onClick={() => navigate('/payroll')} className="text-left">
+          <StatCard label="Monthly Payroll" value={formatCurrency(stats.monthlyPayroll)} icon={<PaymentsOutlinedIcon className="h-5 w-5" />} trend="up" trendLabel="Live" accent="success" />
+        </button>
       </div>
-
-      {/* Quick stats row */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card className="p-4">
-          <p className="text-xs text-muted-foreground">Active Employees</p>
-          <p className="mt-1 font-display text-xl font-bold text-foreground">{stats.active}</p>
-          <Badge variant="success" className="mt-2">{Math.round((stats.active / stats.totalEmployees) * 100)}%</Badge>
+          <p className="text-xs text-muted-foreground">Approved Leaves</p>
+          <p className="mt-1 font-display text-xl font-bold text-foreground">{stats.approvedLeaves}</p>
+          <Badge variant="success" className="mt-2">Approved</Badge>
         </Card>
         <Card className="p-4">
-          <p className="text-xs text-muted-foreground">Pending Leaves</p>
-          <p className="mt-1 font-display text-xl font-bold text-foreground">{stats.pendingLeaves}</p>
-          <Badge variant="warning" className="mt-2">Action needed</Badge>
+          <p className="text-xs text-muted-foreground">Rejected Leaves</p>
+          <p className="mt-1 font-display text-xl font-bold text-foreground">{stats.rejectedLeaves}</p>
+          <Badge variant="danger" className="mt-2">Rejected</Badge>
         </Card>
         <Card className="p-4">
-          <p className="text-xs text-muted-foreground">Active Projects</p>
-          <p className="mt-1 font-display text-xl font-bold text-foreground">{stats.activeProjects}</p>
-          <Badge variant="primary" className="mt-2">In progress</Badge>
+          <p className="text-xs text-muted-foreground">Total Assets</p>
+          <p className="mt-1 font-display text-xl font-bold text-foreground">{stats.totalAssets}</p>
+          <Badge variant="secondary" className="mt-2">{stats.assignedAssets} assigned</Badge>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground">Departments</p>
           <p className="mt-1 font-display text-xl font-bold text-foreground">{stats.departments}</p>
-          <Badge variant="secondary" className="mt-2">All active</Badge>
+          <Badge variant="secondary" className="mt-2">Active</Badge>
         </Card>
       </div>
-
-      {/* Drag and drop widgets */}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={widgets} strategy={verticalListSortingStrategy}>
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             {widgets.map((w) => (
               <SortableWidget key={w} id={w}>
                 <div className="group relative">
@@ -298,83 +264,6 @@ export function DashboardPage() {
           </div>
         </SortableContext>
       </DndContext>
-
-      {/* Analytics row */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Card>
-          <CardHeader><CardTitle>HR Health Radar</CardTitle></CardHeader>
-          <CardContent><RadarChartCard data={radarData} /></CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Department Radial</CardTitle></CardHeader>
-          <CardContent>
-            <ApexRadialChart labels={['Engineering', 'Sales', 'Design']} series={[72, 58, 45]} />
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Activity Heatmap</CardTitle></CardHeader>
-          <CardContent><ApexHeatmapChart data={heatmapData} /></CardContent>
-        </Card>
-      </div>
-
-      {/* Bottom row: timeline + birthdays + announcements */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-1">
-          <CardHeader><CardTitle>Recent Activity</CardTitle></CardHeader>
-          <CardContent><Timeline items={timelineItems} /></CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><CakeOutlinedIcon className="h-4 w-4 text-secondary" /> Upcoming Birthdays</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {stats.birthdays.slice(0, 5).map((emp) => (
-              <div key={emp.id} className="flex items-center gap-3">
-                <Avatar name={`${emp.firstName} ${emp.lastName}`} size="sm" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">{emp.firstName} {emp.lastName}</p>
-                  <p className="text-xs text-muted-foreground">{emp.jobTitle}</p>
-                </div>
-                <Badge variant="secondary">{moment(emp.hireDate).format('MMM D')}</Badge>
-              </div>
-            ))}
-            {stats.birthdays.length === 0 && <p className="text-sm text-muted-foreground">No birthdays this month.</p>}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><TrendingUpOutlinedIcon className="h-4 w-4 text-success" /> Top Performers</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {stats.topPerformers.map((emp, i) => (
-              <div key={emp.id} className="flex items-center gap-3">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">{i + 1}</span>
-                <Avatar name={`${emp.firstName} ${emp.lastName}`} size="sm" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-foreground">{emp.firstName} {emp.lastName}</p>
-                  <p className="text-xs text-muted-foreground">{emp.performanceScore}% performance</p>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Announcements */}
-      <Card>
-        <CardHeader><CardTitle>Latest Announcements</CardTitle></CardHeader>
-        <CardContent className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {data.announcements.map((a) => (
-            <div key={a.id} className="rounded-lg border border-border p-4 transition-colors hover:bg-muted/40">
-              <p className="text-sm font-semibold text-foreground">{a.title}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{a.body}</p>
-              <p className="mt-2 text-[11px] text-muted-foreground/70">{a.author} · {moment(a.createdAt).fromNow()}</p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
     </div>
   );
 }

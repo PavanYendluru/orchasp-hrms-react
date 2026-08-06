@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '../components/common/PageHeader';
 import { DataTable } from '../components/tables/DataTable';
@@ -8,7 +8,7 @@ import { FormField } from '../components/ui/Input';
 import { api } from '../services/api';
 import { toast } from 'sonner';
 
-const emptyEmployee = { firstName: '', lastName: '', email: '', phone: '', jobTitle: '', departmentId: '', location: '', salary: '', hireDate: '', employmentType: 'full-time', status: 'ACTIVE', address: '', emergencyContact: '', profilePicture: '', initialPassword: '' };
+const emptyEmployee = { firstName: '', lastName: '', email: '', phone: '', jobTitle: '', departmentId: '', location: '', salary: '', hireDate: '', dateOfBirth: '', employmentType: 'full-time', status: 'ACTIVE', address: '', emergencyContact: '', profilePicture: '', initialPassword: '' };
 
 /** Database-backed employee directory with department filtering. */
 export function EmployeesPage() {
@@ -20,7 +20,7 @@ export function EmployeesPage() {
   const [departments, setDepartments] = useState([]);
   const [form, setForm] = useState(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       const [employeeData, departmentData] = await Promise.all([
         api.employees.all(),
@@ -31,11 +31,11 @@ export function EmployeesPage() {
     } catch {
       toast.error('Unable to load employee data.');
     }
-  };
+  }, []);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
 
   const handleDepartmentFilterChange = (deptId) => {
     if (deptId) {
@@ -56,7 +56,7 @@ export function EmployeesPage() {
     return found ? found.name : `Department #${selectedDeptId}`;
   }, [departments, selectedDeptId]);
 
-  const remove = async (employee) => {
+  const remove = useCallback(async (employee) => {
     if (!window.confirm(`Delete ${employee.firstName} ${employee.lastName}?`)) return;
     try {
       await api.employees.remove(employee.id);
@@ -65,23 +65,25 @@ export function EmployeesPage() {
     } catch (error) {
       toast.error(error.response?.data?.message || 'Unable to delete employee.');
     }
-  };
+  }, [load]);
 
   const columns = useMemo(
     () => [
-      { accessorKey: 'employeeCode', header: 'Employee Code', cell: ({ row }) => <span>{row.original.employeeCode || `EMP-${row.original.id}`}</span> },
+      { accessorKey: 'employeeId', header: 'Employee ID', cell: ({ row }) => <span>{row.original.employeeId || `EMP-${row.original.id}`}</span> },
       {
         accessorKey: 'firstName',
         header: 'Employee',
         cell: ({ row }) => (
           <span>
             {row.original.firstName} {row.original.lastName}
-            <small className="block text-muted-foreground">{row.original.email}</small>
           </span>
         ),
       },
-      { accessorKey: 'jobTitle', header: 'Title' },
+      { accessorKey: 'jobTitle', header: 'Designation' },
       { accessorKey: 'departmentName', header: 'Department', cell: ({ row }) => <span>{row.original.departmentName || 'N/A'}</span> },
+      { accessorKey: 'email', header: 'Email' },
+      { accessorKey: 'phone', header: 'Phone' },
+      { accessorKey: 'dateOfBirth', header: 'Date of Birth', cell: ({ row }) => <span>{row.original.dateOfBirth || 'N/A'}</span> },
       { accessorKey: 'location', header: 'Location' },
       { accessorKey: 'hireDate', header: 'Joining Date' },
       { accessorKey: 'salary', header: 'Salary', cell: ({ row }) => `$${Number(row.original.salary || 0).toLocaleString()}` },
@@ -89,15 +91,15 @@ export function EmployeesPage() {
       {
         id: 'actions',
         header: 'Actions',
-        cell: ({ row }) => (
-          <div className="flex gap-2">
+cell: ({ row }) => (
+          <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
             <Button size="sm" variant="outline" onClick={() => setForm({ ...row.original, initialPassword: '' })}>Edit</Button>
             <Button size="sm" variant="outline" onClick={() => remove(row.original)}>Delete</Button>
           </div>
         ),
       },
     ],
-    []
+    [remove]
   );
 
   return (
@@ -135,7 +137,7 @@ export function EmployeesPage() {
       <DataTable
         columns={columns}
         data={filteredEmployees}
-        searchKey={(item) => `${item.employeeCode} ${item.firstName} ${item.lastName} ${item.email} ${item.jobTitle} ${item.location} ${item.departmentName}`}
+        searchKey={(item) => `${item.employeeId} ${item.firstName} ${item.lastName} ${item.email} ${item.phone} ${item.jobTitle} ${item.location} ${item.departmentName}`}
         searchPlaceholder="Search employees…"
         onRowClick={(employee) => navigate(`/employees/${employee.id}`)}
       />
@@ -147,7 +149,7 @@ export function EmployeesPage() {
 function EmployeeModal({ employee, departments, onClose, onSaved }) {
   const editing = Boolean(employee.id); const [values, setValues] = useState(employee);
   const set = (key, value) => setValues({ ...values, [key]: value });
-  const submit = async (event) => { event.preventDefault(); if (!editing && values.initialPassword.length < 8) return toast.error('Temporary password must contain at least 8 characters.'); try { const payload = { ...values, departmentId: Number(values.departmentId), salary: Number(values.salary), initialPassword: values.initialPassword || null }; if (editing) await api.employees.update(values.id, payload); else await api.employees.create(payload); await onSaved(); toast.success(editing ? 'Employee updated.' : 'Employee and login account created.'); onClose(); } catch (error) { toast.error(error.response?.data?.message || 'Unable to save employee.'); } };
-  const fields = [['First Name', 'firstName'], ['Last Name', 'lastName'], ['Email', 'email', 'email'], ['Phone', 'phone'], ['Job Title', 'jobTitle'], ['Location', 'location'], ['Salary', 'salary', 'number'], ['Joining Date', 'hireDate', 'date'], ['Profile Picture URL', 'profilePicture'], ['Address', 'address'], ['Emergency Contact', 'emergencyContact']];
-  return <Modal open onOpenChange={(open) => !open && onClose()} title={editing ? 'Edit Employee' : 'Add Employee'}><form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">{fields.map(([label, key, type = 'text']) => <FormField key={key} label={label}><input required={['firstName', 'lastName', 'email', 'phone', 'jobTitle', 'location', 'salary', 'hireDate'].includes(key)} type={type} className="input-base" value={values[key] || ''} onChange={(e) => set(key, e.target.value)} /></FormField>)}<FormField label="Department"><select required className="input-base" value={values.departmentId || ''} onChange={(e) => set('departmentId', e.target.value)}><option value="">Select department</option>{departments.map((department) => <option key={department.id} value={department.id}>{department.name}</option>)}</select></FormField><FormField label="Status"><select className="input-base" value={values.status} onChange={(e) => set('status', e.target.value)}>{['ACTIVE', 'ON_LEAVE', 'INACTIVE', 'TERMINATED'].map((status) => <option key={status}>{status}</option>)}</select></FormField><FormField label="Employment Type"><select className="input-base" value={values.employmentType} onChange={(e) => set('employmentType', e.target.value)}>{['full-time', 'part-time', 'contract', 'intern'].map((type) => <option key={type}>{type}</option>)}</select></FormField>{!editing && <FormField label="Temporary Employee Password"><input required type="password" minLength="8" className="input-base" value={values.initialPassword} onChange={(e) => set('initialPassword', e.target.value)} /></FormField>}<div className="flex gap-2 sm:col-span-2"><Button type="button" variant="outline" onClick={onClose}>Cancel</Button><Button type="submit">Save Employee</Button></div></form></Modal>;
+  const submit = async (event) => { event.preventDefault(); if (!editing && values.initialPassword.length < 8) return toast.error('Temporary password must contain at least 8 characters.'); if (new Date(values.dateOfBirth) > new Date()) return toast.error('Date of birth cannot be in the future.'); try { const payload = { ...values, departmentId: Number(values.departmentId), salary: Number(values.salary), initialPassword: values.initialPassword || null }; if (editing) await api.employees.update(values.id, payload); else await api.employees.create(payload); await onSaved(); toast.success(editing ? 'Employee updated.' : 'Employee and login account created.'); onClose(); } catch (error) { toast.error(error.response?.data?.message || 'Unable to save employee.'); } };
+  const fields = [['First Name', 'firstName'], ['Last Name', 'lastName'], ['Email', 'email', 'email'], ['Phone', 'phone', 'tel'], ['Job Title', 'jobTitle'], ['Location', 'location'], ['Salary', 'salary', 'number'], ['Date of Birth', 'dateOfBirth', 'date'], ['Joining Date', 'hireDate', 'date'], ['Profile Picture URL', 'profilePicture'], ['Address', 'address'], ['Emergency Contact', 'emergencyContact']];
+  return <Modal open onOpenChange={(open) => !open && onClose()} title={editing ? 'Edit Employee' : 'Add Employee'} className="max-w-3xl"><form onSubmit={submit} className="grid gap-x-4 gap-y-3 sm:grid-cols-2">{fields.map(([label, key, type = 'text']) => <FormField key={key} label={label}><input required={['firstName', 'lastName', 'email', 'phone', 'jobTitle', 'location', 'salary', 'hireDate', 'dateOfBirth'].includes(key)} type={type} max={key === 'dateOfBirth' ? new Date().toISOString().slice(0, 10) : undefined} className="input-base" value={values[key] || ''} onChange={(e) => set(key, e.target.value)} /></FormField>)}<FormField label="Department"><select required className="input-base" value={values.departmentId || ''} onChange={(e) => set('departmentId', e.target.value)}><option value="">Select department</option>{departments.map((department) => <option key={department.id} value={department.id}>{department.name}</option>)}</select></FormField><FormField label="Status"><select className="input-base" value={values.status} onChange={(e) => set('status', e.target.value)}>{['ACTIVE', 'ON_LEAVE', 'INACTIVE', 'TERMINATED'].map((status) => <option key={status}>{status}</option>)}</select></FormField><FormField label="Employment Type"><select className="input-base" value={values.employmentType} onChange={(e) => set('employmentType', e.target.value)}>{['full-time', 'part-time', 'contract', 'intern'].map((type) => <option key={type}>{type}</option>)}</select></FormField>{!editing && <FormField label="Temporary Employee Password"><input required type="password" minLength="8" className="input-base" value={values.initialPassword} onChange={(e) => set('initialPassword', e.target.value)} /></FormField>}<div className="flex flex-wrap gap-2 pt-1 sm:col-span-2"><Button type="button" variant="outline" onClick={onClose}>Cancel</Button><Button type="submit">Save Employee</Button></div></form></Modal>;
 }

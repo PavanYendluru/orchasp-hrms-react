@@ -18,7 +18,9 @@ export function Modal({
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm data-[state=open]:animate-fade-in" />
         <DialogPrimitive.Content
           className={cn(
-            'fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl border border-border bg-card p-6 shadow-soft data-[state=open]:animate-fade-in',
+            // Keep dialogs within the viewport. Long forms can scroll inside the
+            // dialog instead of extending below the browser window.
+            'fixed left-1/2 top-1/2 z-50 max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-border bg-card p-4 shadow-soft scrollbar-thin sm:max-h-[calc(100vh-4rem)] sm:p-6 data-[state=open]:animate-fade-in',
             className
           )}
         >

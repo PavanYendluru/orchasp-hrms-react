@@ -1,5 +1,5 @@
 /** Tracks employee attendance records and daily punch-in activity. */
-import { useMemo, useState  } from 'react';
+import { useEffect, useMemo, useState  } from 'react';
 import moment from 'moment';
 import { PageHeader  } from '../components/common/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent  } from '../components/ui/Card';
@@ -8,6 +8,8 @@ import { Button  } from '../components/ui/Button';
 import { Avatar  } from '../components/ui/Avatar';
 import { LineChartCard  } from '../components/charts/Recharts';
 import { db  } from '../data/db';
+import { Spinner  } from '../components/ui/Spinner';
+import { api  } from '../services/api';
 import { toast  } from 'sonner';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -15,12 +17,46 @@ import LogoutIcon from '@mui/icons-material/Logout';
 export function AttendancePage() {
   const [punched, setPunched] = useState(false);
   const [punchTime, setPunchTime] = useState(null);
+  const [todayRecords, setTodayRecords] = useState([]);
+  const [loadingToday, setLoadingToday] = useState(true);
+  const [historyRecords, setHistoryRecords] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
 
-  const today = moment().format('YYYY-MM-DD');
-  const todayRecords = useMemo(
-    () => db.attendance.filter((a) => a.date === today).slice(0, 10),
-    [today]
-  );
+  useEffect(() => {
+    let isMounted = true;
+    async function loadToday() {
+      setLoadingToday(true);
+      try {
+        const records = await api.attendance.today();
+        if (isMounted) setTodayRecords(records || []);
+      } catch (err) {
+        console.error('Failed loading today attendance:', err);
+        if (isMounted) toast.error('Could not load today\'s attendance.');
+      } finally {
+        if (isMounted) setLoadingToday(false);
+      }
+    }
+    loadToday();
+    return () => { isMounted = false; };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadHistory() {
+      setLoadingHistory(true);
+      try {
+        const records = await api.attendance.history();
+        if (isMounted) setHistoryRecords(records || []);
+      } catch (err) {
+        console.error('Failed loading attendance history:', err);
+        if (isMounted) toast.error('Could not load attendance history.');
+      } finally {
+        if (isMounted) setLoadingHistory(false);
+      }
+    }
+    loadHistory();
+    return () => { isMounted = false; };
+  }, []);
 
   const trend = useMemo(() => {
     const days = [];
@@ -80,26 +116,97 @@ export function AttendancePage() {
       <Card>
         <CardHeader><CardTitle>Today's Attendance</CardTitle></CardHeader>
         <CardContent>
+          {loadingToday ? (
+            <div className="flex items-center justify-center py-10">
+              <Spinner className="h-6 w-6" />
+            </div>
+          ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead><tr className="border-b border-border text-left text-muted-foreground"><th className="py-2">Employee</th><th>Check In</th><th>Check Out</th><th>Hours</th><th>Status</th></tr></thead>
+              <thead><tr className="border-b border-border text-left text-muted-foreground"><th className="py-2">Employee</th><th>Department</th><th>Check In</th><th>Check Out</th><th>Hours</th><th>Status</th></tr></thead>
               <tbody>
-                {todayRecords.map((a) => {
-                  const emp = db.employees.find((e) => e.id === a.employeeId);
-                  if (!emp) return null;
-                  return (
-                    <tr key={a.id} className="border-b border-border">
-                      <td className="py-2"><div className="flex items-center gap-2"><Avatar name={`${emp.firstName} ${emp.lastName}`} size="sm" /><span className="font-medium">{emp.firstName} {emp.lastName}</span></div></td>
-                      <td>{a.checkIn || '—'}</td>
-                      <td>{a.checkOut || '—'}</td>
-                      <td>{a.workHours}h</td>
-                      <td><Badge variant={a.status === 'present' ? 'success' : a.status === 'absent' ? 'danger' : a.status === 'late' ? 'warning' : 'primary'} className="capitalize">{a.status}</Badge></td>
-                    </tr>
-                  );
-                })}
+                {todayRecords.map((a) => (
+                  <tr key={a.id} className="border-b border-border">
+                    <td className="py-2">
+                      <div className="flex items-center gap-2">
+                        <Avatar name={a.employeeName} size="sm" />
+                        <div>
+                          <span className="font-medium block">{a.employeeName}</span>
+                          <span className="text-xs text-muted-foreground">ID: {a.employeeCode || a.employeeId}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{a.departmentName || 'N/A'}</td>
+                    <td>{a.checkIn ? moment(a.checkIn, 'HH:mm:ss').format('hh:mm A') : '—'}</td>
+                    <td>{a.checkOut ? moment(a.checkOut, 'HH:mm:ss').format('hh:mm A') : '—'}</td>
+                    <td>{a.workingHours ? `${a.workingHours}h` : '—'}</td>
+                    <td>
+                      <Badge variant={a.status === 'ACTIVE' ? 'success' : a.status === 'INACTIVE' ? 'muted' : 'primary'} className="capitalize">
+                        {a.status}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+                {todayRecords.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center text-muted-foreground">
+                      No attendance records for today yet.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Attendance History</CardTitle></CardHeader>
+        <CardContent>
+          {loadingHistory ? (
+            <div className="flex items-center justify-center py-10">
+              <Spinner className="h-6 w-6" />
+            </div>
+          ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead><tr className="border-b border-border text-left text-muted-foreground"><th className="py-2">Date</th><th>Employee</th><th>Department</th><th>Check In</th><th>Check Out</th><th>Hours</th><th>Status</th></tr></thead>
+              <tbody>
+                {historyRecords.slice(0, 10).map((a) => (
+                  <tr key={a.id} className="border-b border-border">
+                    <td className="py-2">{a.date}</td>
+                    <td className="py-2">
+                      <div className="flex items-center gap-2">
+                        <Avatar name={a.employeeName} size="sm" />
+                        <div>
+                          <span className="font-medium block">{a.employeeName}</span>
+                          <span className="text-xs text-muted-foreground">ID: {a.employeeCode || a.employeeId}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{a.departmentName || 'N/A'}</td>
+                    <td>{a.checkIn ? moment(a.checkIn, 'HH:mm:ss').format('hh:mm A') : '—'}</td>
+                    <td>{a.checkOut ? moment(a.checkOut, 'HH:mm:ss').format('hh:mm A') : '—'}</td>
+                    <td>{a.workingHours ? `${a.workingHours}h` : '—'}</td>
+                    <td>
+                      <Badge variant={a.status === 'ACTIVE' ? 'success' : a.status === 'INACTIVE' ? 'muted' : 'primary'} className="capitalize">
+                        {a.status}
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+                {historyRecords.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-muted-foreground">
+                      No attendance history found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          )}
         </CardContent>
       </Card>
     </div>

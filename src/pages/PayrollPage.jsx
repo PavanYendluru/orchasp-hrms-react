@@ -1,56 +1,80 @@
-/** Displays payroll records and their monthly payment breakdowns. */
-import { useMemo, useState  } from 'react';
+/** Displays payroll records and their monthly payment breakdowns (backend-driven). */
+import { useEffect, useMemo, useState } from 'react';
 import moment from 'moment';
-import { PageHeader  } from '../components/common/PageHeader';
-import { DataTable  } from '../components/tables/DataTable';
-import { Card, CardHeader, CardTitle, CardContent  } from '../components/ui/Card';
-import { Badge  } from '../components/ui/Badge';
-import { StatCard  } from '../components/common/StatCard';
-import { ApexAreaChart  } from '../components/charts/ApexCharts';
-import { db  } from '../data/db';
-import { formatCurrency  } from '../lib/utils';
+import { PageHeader } from '../components/common/PageHeader';
+import { DataTable } from '../components/tables/DataTable';
+import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
+import { StatCard } from '../components/common/StatCard';
+import { ApexAreaChart } from '../components/charts/ApexCharts';
+import { Spinner } from '../components/ui/Spinner';
+import { api } from '../services/api';
+import { formatCurrency } from '../lib/utils';
+import { toast } from 'sonner';
 import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import SavingsOutlinedIcon from '@mui/icons-material/SavingsOutlined';
 import TrendingDownOutlinedIcon from '@mui/icons-material/TrendingDownOutlined';
 import ReceiptOutlinedIcon from '@mui/icons-material/ReceiptOutlined';
 
-export function PayrollPage() {
-  const [month, setMonth] = useState('2025-06');
+const statusVariant = {
+  PENDING: 'warning',
+  PROCESSED: 'primary',
+  PAID: 'success',
+};
 
-  const payroll = useMemo(() => db.payroll.filter((p) => p.month === month).map((p) => {
-    const emp = db.employees.find((e) => e.id === p.employeeId);
-    return { ...p, employee: emp };
-  }), [month]);
+export function PayrollPage() {
+  const [month, setMonth] = useState(moment().format('YYYY-MM'));
+  const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
+    setError(null);
+    api.payroll
+      .list(month)
+      .then((data) => {
+        if (isMounted) setRecords(data || []);
+      })
+      .catch((err) => {
+        console.error('Failed loading payroll:', err);
+        if (isMounted) {
+          setError(err?.response?.data?.message || 'Unable to load payroll records.');
+          setRecords([]);
+        }
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+    return () => { isMounted = false; };
+  }, [month]);
 
   const totals = useMemo(() => ({
-    gross: payroll.reduce((s, p) => s + p.baseSalary + p.bonus, 0),
-    deductions: payroll.reduce((s, p) => s + p.deductions, 0),
-    net: payroll.reduce((s, p) => s + p.netSalary, 0),
-    count: payroll.length,
-  }), [payroll]);
+    gross: records.reduce((s, p) => s + Number(p.basicSalary || 0) + Number(p.hra || 0) + Number(p.allowances || 0) + Number(p.bonuses || 0), 0),
+    deductions: records.reduce((s, p) => s + Number(p.deductions || 0) + Number(p.pf || 0) + Number(p.tax || 0), 0),
+    net: records.reduce((s, p) => s + Number(p.netSalary || 0), 0),
+    count: records.length,
+  }), [records]);
 
   const trendData = useMemo(() => {
-    const months = ['2025-01', '2025-02', '2025-03', '2025-04', '2025-05', '2025-06'];
+    const months = [-5, -4, -3, -2, -1, 0].map((i) => moment().subtract(i, 'months').format('YYYY-MM'));
     return {
       categories: months.map((m) => moment(m + '-01').format('MMM')),
-      data: [{ name: 'Net Payroll', data: months.map((m) => db.payroll.filter((p) => p.month === m).reduce((s, p) => s + p.netSalary, 0)) }],
+      data: [{ name: 'Net Payroll', data: months.map(() => 0) }],
     };
   }, []);
 
   const columns = useMemo(() => [
-    {
-      accessorKey: 'name',
-      header: 'Employee',
-      cell: ({ row }) => <span className="font-medium">{row.original.employee?.firstName} {row.original.employee?.lastName}</span>,
-    },
-    { accessorKey: 'baseSalary', header: 'Base', cell: ({ row }) => formatCurrency(row.original.baseSalary) },
-    { accessorKey: 'bonus', header: 'Bonus', cell: ({ row }) => formatCurrency(row.original.bonus) },
-    { accessorKey: 'deductions', header: 'Deductions', cell: ({ row }) => <span className="text-danger">-{formatCurrency(row.original.deductions)}</span> },
-    { accessorKey: 'netSalary', header: 'Net', cell: ({ row }) => <span className="font-semibold">{formatCurrency(row.original.netSalary)}</span> },
+    { accessorKey: 'employeeName', header: 'Employee', cell: ({ row }) => <span className="font-medium">{row.original.employeeName}</span> },
+    { accessorKey: 'basicSalary', header: 'Base', cell: ({ row }) => formatCurrency(Number(row.original.basicSalary || 0)) },
+    { accessorKey: 'bonuses', header: 'Bonus', cell: ({ row }) => formatCurrency(Number(row.original.bonuses || 0)) },
+    { accessorKey: 'deductions', header: 'Deductions', cell: ({ row }) => <span className="text-danger">-{formatCurrency(Number(row.original.deductions || 0) + Number(row.original.pf || 0) + Number(row.original.tax || 0))}</span> },
+    { accessorKey: 'netSalary', header: 'Net', cell: ({ row }) => <span className="font-semibold">{formatCurrency(Number(row.original.netSalary || 0))}</span> },
     {
       accessorKey: 'status',
       header: 'Status',
-      cell: ({ row }) => <Badge variant={row.original.status === 'paid' ? 'success' : row.original.status === 'processed' ? 'primary' : 'warning'} className="capitalize">{row.original.status}</Badge>,
+      cell: ({ row }) => <Badge variant={statusVariant[row.original.status] || 'primary'} className="capitalize">{row.original.status || '—'}</Badge>,
     },
   ], []);
 
@@ -73,13 +97,20 @@ export function PayrollPage() {
       <div className="flex items-center gap-3">
         <label className="text-sm text-muted-foreground">Month:</label>
         <select value={month} onChange={(e) => setMonth(e.target.value)} className="input-base w-auto">
-          {['2025-01', '2025-02', '2025-03', '2025-04', '2025-05', '2025-06'].map((m) => (
-            <option key={m} value={m}>{moment(m + '-01').format('MMMM YYYY')}</option>
-          ))}
+          {[-5, -4, -3, -2, -1, 0].map((i) => {
+            const m = moment().subtract(i, 'months').format('YYYY-MM');
+            return <option key={m} value={m}>{moment(m + '-01').format('MMMM YYYY')}</option>;
+          })}
         </select>
       </div>
 
-      <DataTable columns={columns} data={payroll} searchKey={(p) => `${p.employee?.firstName} ${p.employee?.lastName}`} searchPlaceholder="Search payroll…" exportFilename={`payroll-${month}.csv`} />
+      {loading ? (
+        <div className="flex justify-center py-16"><Spinner className="h-8 w-8" /></div>
+      ) : error ? (
+        <Card><CardContent className="py-10 text-center text-sm text-muted-foreground">{error}</CardContent></Card>
+      ) : (
+        <DataTable columns={columns} data={records} searchKey={(p) => p.employeeName || ''} searchPlaceholder="Search payroll…" exportFilename={`payroll-${month}.csv`} />
+      )}
     </div>
   );
 }

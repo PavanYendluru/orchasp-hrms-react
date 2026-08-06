@@ -16,7 +16,7 @@ export function NotificationCard({ notification, onClick, className }) {
   return (
     <Card
       onClick={onClick}
-      className={cn('cursor-pointer p-3.5 transition-colors hover:bg-muted/50', !notification.read && 'border-primary/30', className)}
+      className={cn('cursor-pointer p-3.5 transition-colors hover:bg-muted/50', !notification.isRead && 'border-primary/30', className)}
     >
       <div className="flex gap-3">
         <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-bold', typeAccent[notification.type])}>
@@ -25,7 +25,7 @@ export function NotificationCard({ notification, onClick, className }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
             <p className="truncate text-sm font-medium text-foreground">{notification.title}</p>
-            {!notification.read && <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />}
+            {!notification.isRead && <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />}
           </div>
           <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{notification.message}</p>
           <p className="mt-1 text-[11px] text-muted-foreground/70">{new Date(notification.createdAt).toLocaleString()}</p>
