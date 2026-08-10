@@ -23,10 +23,10 @@ export const api = {
     me: async () => (await http.get('/me')).data,
     update: async (values) => (await http.patch('/me/profile', values)).data,
   },
-attendance: {
+  attendance: {
     punchIn: async (employeeId) => (await http.post(`/attendance/punch-in/${employeeId}`)).data,
     punchOut: async (employeeId) => (await http.post(`/attendance/punch-out/${employeeId}`)).data,
-today: async () => (await http.get('/attendance/today')).data,
+    today: async () => (await http.get('/attendance/today')).data,
     history: async (month, year) => (await http.get('/attendance/history', { params: { month, year } })).data,
     summary: async (employeeId) => (await http.get(`/attendance/summary/${employeeId}`)).data,
     record: async (employeeId, data) => (await http.post(`/attendance/employee/${employeeId}`, null, { params: data })).data,
@@ -40,7 +40,7 @@ today: async () => (await http.get('/attendance/today')).data,
     reject: async (leaveId) => (await http.put(`/leaves/${leaveId}/reject`)).data,
     cancel: async (leaveId) => http.delete(`/leaves/${leaveId}`),
   },
-payroll: {
+  payroll: {
     list: async (month) => (await http.get('/payroll', { params: { month } })).data,
     forEmployee: async (employeeId) => (await http.get(`/payroll/employee/${employeeId}`)).data,
     summary: async (month) => (await http.get('/payroll/summary', { params: { month } })).data,
@@ -69,4 +69,43 @@ payroll: {
     birthdays: async () => (await http.get('/dashboard/birthdays')).data,
     activities: async () => (await http.get('/dashboard/activities')).data,
   },
+  projects: {
+    list: async () => (await http.get('/projects')).data,
+    mine: async () => (await http.get('/me/projects')).data,
+    create: async (values) => (await http.post('/admin/projects', values)).data,
+    update: async (id, values) => (await http.put(`/admin/projects/${id}`, values)).data,
+    remove: async (id) => http.delete(`/admin/projects/${id}`),
+  },
+  tasks: {
+    list: async () => (await http.get('/tasks')).data,
+    mine: async () => (await http.get('/me/tasks')).data,
+    byStatus: async (status) => (await http.get(`/tasks/status/${status}`)).data,
+    create: async (values) => (await http.post('/admin/tasks', values)).data,
+    update: async (id, values) => (await http.put(`/admin/tasks/${id}`, values)).data,
+    transition: async (id, status) => (await http.put(`/tasks/${id}/status/${status}`)).data,
+    remove: async (id) => http.delete(`/admin/tasks/${id}`),
+  },
+  performance: {
+    list: async () => (await http.get('/performance')).data,
+    forEmployee: async (employeeId) => (await http.get(`/performance/employee/${employeeId}`)).data,
+    create: async (values) => (await http.post('/admin/performance', values)).data,
+    update: async (id, values) => (await http.put(`/admin/performance/${id}`, values)).data,
+  },
+  recruitment: {
+    jobs: {
+      list: async () => (await http.get('/job-openings')).data,
+      create: async (values) => (await http.post('/admin/job-openings', values)).data,
+      update: async (id, values) => (await http.put(`/admin/job-openings/${id}`, values)).data,
+      remove: async (id) => http.delete(`/admin/job-openings/${id}`),
+    },
+    candidates: {
+      list: async () => (await http.get('/candidates')).data,
+      create: async (values) => (await http.post('/admin/candidates', values)).data,
+      update: async (id, values) => (await http.put(`/admin/candidates/${id}`, values)).data,
+      setStage: async (id, stage) => (await http.put(`/candidates/${id}/stage/${stage}`)).data,
+      remove: async (id) => http.delete(`/admin/candidates/${id}`),
+    },
+    summary: async () => (await http.get('/recruitment/summary')).data,
+  },
 };
+

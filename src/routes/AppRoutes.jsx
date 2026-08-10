@@ -34,6 +34,9 @@ const EmployeeProfilePage = lazy(() => import('../pages/employee/EmployeeProfile
 const EmployeeLeavePage = lazy(() => import('../pages/employee/EmployeeLeavePage').then((m) => ({ default: m.EmployeeLeavePage })));
 const EmployeePayslipsPage = lazy(() => import('../pages/employee/EmployeePayslipsPage').then((m) => ({ default: m.EmployeePayslipsPage })));
 const EmployeeAssetsPage = lazy(() => import('../pages/employee/EmployeeAssetsPage').then((m) => ({ default: m.EmployeeAssetsPage })));
+const EmployeeTasksPage = lazy(() => import('../pages/employee/EmployeeTasksPage').then((m) => ({ default: m.EmployeeTasksPage })));
+const EmployeeProjectsPage = lazy(() => import('../pages/employee/EmployeeProjectsPage').then((m) => ({ default: m.EmployeeProjectsPage })));
+const EmployeePerformancePage = lazy(() => import('../pages/employee/EmployeePerformancePage').then((m) => ({ default: m.EmployeePerformancePage })));
 
 export function AppRoutes() {
   return (
@@ -52,6 +55,9 @@ export function AppRoutes() {
             <Route path="/employee/leave" element={<Suspense fallback={<PageLoader />}><EmployeeLeavePage /></Suspense>} />
             <Route path="/employee/payslips" element={<Suspense fallback={<PageLoader />}><EmployeePayslipsPage /></Suspense>} />
             <Route path="/employee/assets" element={<Suspense fallback={<PageLoader />}><EmployeeAssetsPage /></Suspense>} />
+            <Route path="/employee/tasks" element={<Suspense fallback={<PageLoader />}><EmployeeTasksPage /></Suspense>} />
+            <Route path="/employee/projects" element={<Suspense fallback={<PageLoader />}><EmployeeProjectsPage /></Suspense>} />
+            <Route path="/employee/performance" element={<Suspense fallback={<PageLoader />}><EmployeePerformancePage /></Suspense>} />
           </Route>
         </Route>
 

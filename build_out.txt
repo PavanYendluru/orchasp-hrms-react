@@ -4,59 +4,65 @@
 
 [36mvite v5.4.21 [32mbuilding for production...[36m[39m
 transforming...
-[32m✓[39m 1530 modules transformed.
+[32m✓[39m 1538 modules transformed.
 rendering chunks...
 computing gzip size...
-[2mdist/[22m[32mindex.html                                [39m[1m[2m  0.93 kB[22m[1m[22m[2m │ gzip:   0.49 kB[22m
-[2mdist/[22m[35massets/index-Cqx7rh_M.css                 [39m[1m[2m 38.25 kB[22m[1m[22m[2m │ gzip:   7.26 kB[22m
-[2mdist/[22m[36massets/Download-B6AM9hhl.js               [39m[1m[2m  0.13 kB[22m[1m[22m[2m │ gzip:   0.14 kB[22m
-[2mdist/[22m[36massets/CheckCircleOutlined-CTzDENoK.js    [39m[1m[2m  0.26 kB[22m[1m[22m[2m │ gzip:   0.21 kB[22m
-[2mdist/[22m[36massets/Logout-CfIvbW67.js                 [39m[1m[2m  0.34 kB[22m[1m[22m[2m │ gzip:   0.25 kB[22m
-[2mdist/[22m[36massets/PageHeader-C7OIfpSW.js             [39m[1m[2m  0.57 kB[22m[1m[22m[2m │ gzip:   0.35 kB[22m
-[2mdist/[22m[36massets/ForgotPasswordPage-DH7VY-A_.js     [39m[1m[2m  1.08 kB[22m[1m[22m[2m │ gzip:   0.63 kB[22m
-[2mdist/[22m[36massets/VisibilityOffOutlined-CfOT3-Kn.js  [39m[1m[2m  1.14 kB[22m[1m[22m[2m │ gzip:   0.58 kB[22m
-[2mdist/[22m[36massets/StatCard-CNU1bkpc.js               [39m[1m[2m  1.17 kB[22m[1m[22m[2m │ gzip:   0.57 kB[22m
-[2mdist/[22m[36massets/ResetPasswordPage-4KemQalO.js      [39m[1m[2m  1.20 kB[22m[1m[22m[2m │ gzip:   0.61 kB[22m
-[2mdist/[22m[36massets/Modal-D7LWPbqQ.js                  [39m[1m[2m  1.28 kB[22m[1m[22m[2m │ gzip:   0.65 kB[22m
-[2mdist/[22m[36massets/Input-CQdSTubM.js                  [39m[1m[2m  1.28 kB[22m[1m[22m[2m │ gzip:   0.50 kB[22m
-[2mdist/[22m[36massets/OtpPage-BY_A0eiU.js                [39m[1m[2m  1.40 kB[22m[1m[22m[2m │ gzip:   0.81 kB[22m
-[2mdist/[22m[36massets/EmployeeAssetsPage-SLyLpkVh.js     [39m[1m[2m  1.67 kB[22m[1m[22m[2m │ gzip:   0.65 kB[22m
-[2mdist/[22m[36massets/EmployeeLoginPage-B-wp2iWT.js      [39m[1m[2m  1.92 kB[22m[1m[22m[2m │ gzip:   0.98 kB[22m
-[2mdist/[22m[36massets/AuthLayout-DtDPX6Wa.js             [39m[1m[2m  2.00 kB[22m[1m[22m[2m │ gzip:   0.80 kB[22m
-[2mdist/[22m[36massets/ProjectsPage-Bgk5RW8p.js           [39m[1m[2m  2.36 kB[22m[1m[22m[2m │ gzip:   0.97 kB[22m
-[2mdist/[22m[36massets/PerformancePage-Dm9S2s8C.js        [39m[1m[2m  2.42 kB[22m[1m[22m[2m │ gzip:   0.97 kB[22m
-[2mdist/[22m[36massets/LoginPage-r_h61H5b.js              [39m[1m[2m  2.55 kB[22m[1m[22m[2m │ gzip:   1.13 kB[22m
-[2mdist/[22m[36massets/EmployeeProfilePage-Dq-Pjdku.js    [39m[1m[2m  2.73 kB[22m[1m[22m[2m │ gzip:   1.01 kB[22m
-[2mdist/[22m[36massets/TasksPage-jQ2uVl8-.js              [39m[1m[2m  3.02 kB[22m[1m[22m[2m │ gzip:   1.38 kB[22m
-[2mdist/[22m[36massets/Tabs-B5NMtpei.js                   [39m[1m[2m  3.16 kB[22m[1m[22m[2m │ gzip:   1.39 kB[22m
-[2mdist/[22m[36massets/DepartmentsPage-Bjsx4dgg.js        [39m[1m[2m  3.31 kB[22m[1m[22m[2m │ gzip:   1.31 kB[22m
-[2mdist/[22m[36massets/ReportsPage--s4Bra2w.js            [39m[1m[2m  3.36 kB[22m[1m[22m[2m │ gzip:   1.39 kB[22m
-[2mdist/[22m[36massets/RecruitmentPage-DDxbUami.js        [39m[1m[2m  3.45 kB[22m[1m[22m[2m │ gzip:   1.67 kB[22m
-[2mdist/[22m[36massets/EmployeeLeavePage-DOsXkfjj.js      [39m[1m[2m  3.75 kB[22m[1m[22m[2m │ gzip:   1.45 kB[22m
-[2mdist/[22m[36massets/AnalyticsPage-3qpkFUV1.js          [39m[1m[2m  3.77 kB[22m[1m[22m[2m │ gzip:   1.30 kB[22m
-[2mdist/[22m[36massets/PayrollPage-DLJu04fB.js            [39m[1m[2m  4.53 kB[22m[1m[22m[2m │ gzip:   1.99 kB[22m
-[2mdist/[22m[36massets/ProfilePage-BaN1cVxH.js            [39m[1m[2m  4.86 kB[22m[1m[22m[2m │ gzip:   1.47 kB[22m
-[2mdist/[22m[36massets/EmployeePayslipsPage-DBqoeKoJ.js   [39m[1m[2m  5.52 kB[22m[1m[22m[2m │ gzip:   1.63 kB[22m
-[2mdist/[22m[36massets/AttendancePage-CevDLhQg.js         [39m[1m[2m  6.13 kB[22m[1m[22m[2m │ gzip:   1.72 kB[22m
-[2mdist/[22m[36massets/LeavePage-DKeZ_Vl1.js              [39m[1m[2m  6.21 kB[22m[1m[22m[2m │ gzip:   2.29 kB[22m
-[2mdist/[22m[36massets/EmployeesPage-Dk1tr0kE.js          [39m[1m[2m  6.58 kB[22m[1m[22m[2m │ gzip:   2.53 kB[22m
-[2mdist/[22m[36massets/EmployeeDashboardPage-BE-5UasZ.js  [39m[1m[2m  7.18 kB[22m[1m[22m[2m │ gzip:   2.13 kB[22m
-[2mdist/[22m[36massets/EmployeeDetailPage-BM0qI1Pc.js     [39m[1m[2m  9.23 kB[22m[1m[22m[2m │ gzip:   2.76 kB[22m
-[2mdist/[22m[36massets/DashboardPage-DsCTTRaq.js          [39m[1m[2m  9.37 kB[22m[1m[22m[2m │ gzip:   3.08 kB[22m
-[2mdist/[22m[36massets/SettingsPage-CAOo1Ll-.js           [39m[1m[2m 10.44 kB[22m[1m[22m[2m │ gzip:   3.73 kB[22m
-[2mdist/[22m[36massets/AssetsPage-D-XpgQel.js             [39m[1m[2m 11.68 kB[22m[1m[22m[2m │ gzip:   4.40 kB[22m
-[2mdist/[22m[36massets/sortable.esm-Dooy-Y7m.js           [39m[1m[2m 44.16 kB[22m[1m[22m[2m │ gzip:  14.76 kB[22m
-[2mdist/[22m[36massets/moment-C5S46NFB.js                 [39m[1m[2m 60.81 kB[22m[1m[22m[2m │ gzip:  19.71 kB[22m
-[2mdist/[22m[36massets/DataTable-BzRYyhO7.js              [39m[1m[2m 62.91 kB[22m[1m[22m[2m │ gzip:  17.62 kB[22m
-[2mdist/[22m[36massets/index.esm-B0lQgLS3.js              [39m[1m[2m 64.51 kB[22m[1m[22m[2m │ gzip:  22.32 kB[22m
-[2mdist/[22m[36massets/ChartJS-DuoKtAmU.js                [39m[1m[2m187.02 kB[22m[1m[22m[2m │ gzip:  65.09 kB[22m
-[2mdist/[22m[36massets/db-Dg2Ga0n0.js                     [39m[1m[2m242.34 kB[22m[1m[22m[2m │ gzip:  29.78 kB[22m
-[2mdist/[22m[36massets/Recharts-DTt9NrVP.js               [39m[1m[2m446.04 kB[22m[1m[22m[2m │ gzip: 125.32 kB[22m
-[2mdist/[22m[36massets/index-OZMT0MOg.js                  [39m[1m[33m636.60 kB[39m[22m[2m │ gzip: 211.54 kB[22m
-[2mdist/[22m[36massets/ApexCharts-CnKw0A_t.js             [39m[1m[33m788.99 kB[39m[22m[2m │ gzip: 224.09 kB[22m
+[2mdist/[22m[32mindex.html                                  [39m[1m[2m  0.93 kB[22m[1m[22m[2m │ gzip:   0.49 kB[22m
+[2mdist/[22m[35massets/index-NlV3qfMK.css                   [39m[1m[2m 38.51 kB[22m[1m[22m[2m │ gzip:   7.30 kB[22m
+[2mdist/[22m[36massets/Download-q6wzFw3f.js                 [39m[1m[2m  0.13 kB[22m[1m[22m[2m │ gzip:   0.14 kB[22m
+[2mdist/[22m[36massets/CheckCircleOutlined-BSEcYuLs.js      [39m[1m[2m  0.26 kB[22m[1m[22m[2m │ gzip:   0.20 kB[22m
+[2mdist/[22m[36massets/FolderSharedOutlined-D7i4XNIB.js     [39m[1m[2m  0.29 kB[22m[1m[22m[2m │ gzip:   0.23 kB[22m
+[2mdist/[22m[36massets/Logout-mJww8TaE.js                   [39m[1m[2m  0.34 kB[22m[1m[22m[2m │ gzip:   0.25 kB[22m
+[2mdist/[22m[36massets/EditOutlined-Cy9jbrXp.js             [39m[1m[2m  0.35 kB[22m[1m[22m[2m │ gzip:   0.26 kB[22m
+[2mdist/[22m[36massets/VisibilityOutlined-DTEgbQOw.js       [39m[1m[2m  0.43 kB[22m[1m[22m[2m │ gzip:   0.29 kB[22m
+[2mdist/[22m[36massets/PageHeader-CmIh5ey5.js               [39m[1m[2m  0.57 kB[22m[1m[22m[2m │ gzip:   0.35 kB[22m
+[2mdist/[22m[36massets/VisibilityOffOutlined-Dqj1kKuW.js    [39m[1m[2m  0.77 kB[22m[1m[22m[2m │ gzip:   0.46 kB[22m
+[2mdist/[22m[36massets/ForgotPasswordPage-CsJJlGfE.js       [39m[1m[2m  1.08 kB[22m[1m[22m[2m │ gzip:   0.63 kB[22m
+[2mdist/[22m[36massets/StatCard-BRtw9Rjh.js                 [39m[1m[2m  1.17 kB[22m[1m[22m[2m │ gzip:   0.57 kB[22m
+[2mdist/[22m[36massets/ResetPasswordPage-Be2Xhrqw.js        [39m[1m[2m  1.20 kB[22m[1m[22m[2m │ gzip:   0.61 kB[22m
+[2mdist/[22m[36massets/Modal-Dh5Rx_lo.js                    [39m[1m[2m  1.28 kB[22m[1m[22m[2m │ gzip:   0.65 kB[22m
+[2mdist/[22m[36massets/Input-Bw8XvPKv.js                    [39m[1m[2m  1.28 kB[22m[1m[22m[2m │ gzip:   0.50 kB[22m
+[2mdist/[22m[36massets/OtpPage-BRZbuaaW.js                  [39m[1m[2m  1.40 kB[22m[1m[22m[2m │ gzip:   0.81 kB[22m
+[2mdist/[22m[36massets/EmployeeAssetsPage-CZfuBItK.js       [39m[1m[2m  1.67 kB[22m[1m[22m[2m │ gzip:   0.65 kB[22m
+[2mdist/[22m[36massets/EmployeeLoginPage-Cb2A1u4B.js        [39m[1m[2m  1.97 kB[22m[1m[22m[2m │ gzip:   0.99 kB[22m
+[2mdist/[22m[36massets/AuthLayout-Bt5bpSLo.js               [39m[1m[2m  2.00 kB[22m[1m[22m[2m │ gzip:   0.80 kB[22m
+[2mdist/[22m[36massets/EmployeeProjectsPage-BwNR_mr1.js     [39m[1m[2m  2.08 kB[22m[1m[22m[2m │ gzip:   1.00 kB[22m
+[2mdist/[22m[36massets/LoginPage-v5gMFGVM.js                [39m[1m[2m  2.60 kB[22m[1m[22m[2m │ gzip:   1.14 kB[22m
+[2mdist/[22m[36massets/TasksPage-BLoRR2da.js                [39m[1m[2m  3.02 kB[22m[1m[22m[2m │ gzip:   1.37 kB[22m
+[2mdist/[22m[36massets/EmployeeTasksPage-j2I2bTOl.js        [39m[1m[2m  3.12 kB[22m[1m[22m[2m │ gzip:   1.37 kB[22m
+[2mdist/[22m[36massets/Tabs-SgGTQqfS.js                     [39m[1m[2m  3.16 kB[22m[1m[22m[2m │ gzip:   1.39 kB[22m
+[2mdist/[22m[36massets/EmployeePerformancePage-B6PnGMTo.js  [39m[1m[2m  3.20 kB[22m[1m[22m[2m │ gzip:   1.22 kB[22m
+[2mdist/[22m[36massets/DepartmentsPage-K72WudUU.js          [39m[1m[2m  3.31 kB[22m[1m[22m[2m │ gzip:   1.31 kB[22m
+[2mdist/[22m[36massets/ReportsPage-CkiKodgK.js              [39m[1m[2m  3.36 kB[22m[1m[22m[2m │ gzip:   1.39 kB[22m
+[2mdist/[22m[36massets/EmployeeLeavePage-BRhUTSwq.js        [39m[1m[2m  3.75 kB[22m[1m[22m[2m │ gzip:   1.45 kB[22m
+[2mdist/[22m[36massets/AnalyticsPage-BVZ4ApWD.js            [39m[1m[2m  3.77 kB[22m[1m[22m[2m │ gzip:   1.29 kB[22m
+[2mdist/[22m[36massets/ProfilePage-CiAVYTqR.js              [39m[1m[2m  4.85 kB[22m[1m[22m[2m │ gzip:   1.47 kB[22m
+[2mdist/[22m[36massets/EmployeeProfilePage-CIynftXj.js      [39m[1m[2m  5.04 kB[22m[1m[22m[2m │ gzip:   1.61 kB[22m
+[2mdist/[22m[36massets/PayrollPage-8orJuVEs.js              [39m[1m[2m  5.12 kB[22m[1m[22m[2m │ gzip:   2.25 kB[22m
+[2mdist/[22m[36massets/EmployeePayslipsPage-Bz9MFzMB.js     [39m[1m[2m  5.52 kB[22m[1m[22m[2m │ gzip:   1.63 kB[22m
+[2mdist/[22m[36massets/AttendancePage-aRyxioNu.js           [39m[1m[2m  6.13 kB[22m[1m[22m[2m │ gzip:   1.72 kB[22m
+[2mdist/[22m[36massets/EmployeesPage-DHW6n4k9.js            [39m[1m[2m  6.58 kB[22m[1m[22m[2m │ gzip:   2.53 kB[22m
+[2mdist/[22m[36massets/PerformancePage-CfsG4eT7.js          [39m[1m[2m  6.72 kB[22m[1m[22m[2m │ gzip:   2.37 kB[22m
+[2mdist/[22m[36massets/EmployeeDashboardPage-VDsqHw27.js    [39m[1m[2m  7.18 kB[22m[1m[22m[2m │ gzip:   2.13 kB[22m
+[2mdist/[22m[36massets/ProjectsPage-Dc-G1IGe.js             [39m[1m[2m  8.16 kB[22m[1m[22m[2m │ gzip:   2.59 kB[22m
+[2mdist/[22m[36massets/EmployeeDetailPage-CiqDIg5n.js       [39m[1m[2m  9.23 kB[22m[1m[22m[2m │ gzip:   2.76 kB[22m
+[2mdist/[22m[36massets/DashboardPage-_Vvemkuh.js            [39m[1m[2m  9.37 kB[22m[1m[22m[2m │ gzip:   3.08 kB[22m
+[2mdist/[22m[36massets/LeavePage-3TNaAsEp.js                [39m[1m[2m 10.39 kB[22m[1m[22m[2m │ gzip:   3.00 kB[22m
+[2mdist/[22m[36massets/SettingsPage-C4FMgxJB.js             [39m[1m[2m 10.43 kB[22m[1m[22m[2m │ gzip:   3.72 kB[22m
+[2mdist/[22m[36massets/AssetsPage-DnyG19Y3.js               [39m[1m[2m 11.47 kB[22m[1m[22m[2m │ gzip:   4.29 kB[22m
+[2mdist/[22m[36massets/RecruitmentPage-Dw7U1c1j.js          [39m[1m[2m 13.98 kB[22m[1m[22m[2m │ gzip:   4.27 kB[22m
+[2mdist/[22m[36massets/sortable.esm-MsL9mr2j.js             [39m[1m[2m 44.16 kB[22m[1m[22m[2m │ gzip:  14.76 kB[22m
+[2mdist/[22m[36massets/moment-C5S46NFB.js                   [39m[1m[2m 60.81 kB[22m[1m[22m[2m │ gzip:  19.71 kB[22m
+[2mdist/[22m[36massets/DataTable-DCTdnh_4.js                [39m[1m[2m 62.91 kB[22m[1m[22m[2m │ gzip:  17.62 kB[22m
+[2mdist/[22m[36massets/index.esm-BLEhTIY6.js                [39m[1m[2m 64.51 kB[22m[1m[22m[2m │ gzip:  22.32 kB[22m
+[2mdist/[22m[36massets/ChartJS-Cm4Su1kj.js                  [39m[1m[2m178.95 kB[22m[1m[22m[2m │ gzip:  62.57 kB[22m
+[2mdist/[22m[36massets/db-Dg2Ga0n0.js                       [39m[1m[2m242.34 kB[22m[1m[22m[2m │ gzip:  29.78 kB[22m
+[2mdist/[22m[36massets/Recharts-D78DFaA2.js                 [39m[1m[2m446.04 kB[22m[1m[22m[2m │ gzip: 125.33 kB[22m
+[2mdist/[22m[36massets/index-CiLJTd8N.js                    [39m[1m[33m640.15 kB[39m[22m[2m │ gzip: 212.24 kB[22m
+[2mdist/[22m[36massets/ApexCharts-D2DLTOH8.js               [39m[1m[33m788.99 kB[39m[22m[2m │ gzip: 224.09 kB[22m
 [33m
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
-[32m✓ built in 12.58s[39m
+[32m✓ built in 20.76s[39m

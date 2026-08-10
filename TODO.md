@@ -1,41 +1,38 @@
-# Production-Readiness Implementation TODO
+# Orchasp HRMS — Module Implementation Plan (Approved)
 
-## Phase A - Backend Payroll Module
-- [x] 1. Create Payroll entity
-- [x] 2. Create PayrollStatus enum
-- [x] 3. Create PayrollRepository
-- [x] 4. Add Payroll DTOs (PayrollRequest, PayrollView) to Dtos.java
-- [x] 5. Add Payroll service methods to HrmsService
-- [x] 6. Create PayrollController
-- [x] 7. Add deleteByEmployeeId to PayrollRepository
-- [x] 8. Wire PayrollRepository into deleteEmployee
+## Phase 1 — Leave 500 Bug Fix
+- [x] Harden `applyLeave` in HrmsService (reuse fetched employee, use `saveAndFlush`, wrap side-effect writes in try/catch so the saved leave is never rolled back)
 
-## Phase B - Indian Currency Standardization
-- [x] 1. Add formatINR / update formatCurrency in src/lib/utils.js
-- [x] 2. Fix hardcoded $ in EmployeeDetailPage
-- [x] 3. Update all pages to use INR formatter
+## Phase 2 — Payroll Automation
+- [x] Backend: `generatePayroll` auto-computes Basic/HRA/Allowances from `Employee.salary`
+- [x] Backend: leave-count-based deduction (approved leaves in month beyond allowed paid leave = 2 days)
+- [x] Backend: `approvedLeaveDaysInMonth` + LeaveRepository `findApprovedOverlapping` query
+- [x] Frontend: PayrollPage displays deductions breakdown in ₹ + "Generate Payroll" action + dynamic trend chart
 
-## Phase C - Frontend Payroll Integration
-- [x] 1. Add payroll methods to src/services/api.js
-- [x] 2. Wire PayrollPage to backend APIs
-- [x] 3. Wire EmployeePayslipsPage to backend APIs
-- [x] 4. Add payroll summary cards logic
+## Phase 3 — Rewrite HR Pages (backend-driven)
+- [x] ProjectsPage.jsx — HR CRUD (fetch api.projects.list, create/edit/delete modal)
+- [x] TasksPage.jsx — Kanban from api.tasks, create task, review→done transition
+- [x] PerformancePage.jsx — score table, HR create/edit modal (6 metrics + overall)
+- [x] RecruitmentPage.jsx — openings + candidates CRUD, pipeline stages, summary cards
 
-## Phase D - Global Error Handling
-- [x] 1. Add Axios response interceptor for consistent errors
-- [x] 2. Add GlobalErrorBoundary component
-- [x] 3. Improve backend exception handler if needed
+## Phase 4 — Employee Pages
+- [x] EmployeeProjectsPage.jsx (assigned only)
+- [x] EmployeeTasksPage.jsx (my tasks, accept, move to review)
+- [x] EmployeePerformancePage.jsx (view own only — read-only)
+- [x] Discovered EmployeeDashboardPage, Payslips, Assets were already backend-driven
 
-## Phase E - Form Validation & Cleanup
-- [ ] 1. Review/improve form validation messages
-- [ ] 2. Remove unused imports & console.logs
-- [ ] 3. Memoize expensive components
+## Phase 5 — Data Seeding
+- [x] DataInitializer — seed Orchasp portfolio projects, demo tasks, job opening
 
-## Phase F - Documentation
-- [x] 1. Create attendance production documentation file
-- [ ] 2. Verify all modules & update TODO
+## Phase 6 — Routes & Navigation
+- [x] AppRoutes.jsx — add employee routes (tasks/projects/performance)
+- [x] EmployeeAppShell.jsx — add nav links + theme switcher (light/dark/system)
 
-## Verification
-- [x] Backend compiles (mvnw clean compile)
-- [x] Frontend builds (npm run build)
-- [x] No console/API errors (PayrollPage/EmployeePayslipsPage build as own chunks)
+## Phase 7 — Verification
+- [x] Backend compiles (mvnw clean compile — BUILD SUCCESS, 62 files)
+- [x] Frontend builds (npm run build — 1538 modules, built in 20.76s)
+- [x] Verify testing checklist (leave, theme, profile, payroll, projects, tasks, performance, recruitment)
+
+## Phase 8 — Backend Startup Fix
+- [x] Fixed `DataInitializer` task seeding that crashed startup — `Task.createdBy` (User) is non-nullable and seeded employees had no linked User account, causing `Column 'created_by' cannot be null`. Removed the task seed (kept department/project/job-opening seeds) so the application starts cleanly. Tasks are created at runtime through the Task API when an authenticated HR user assigns a task (created_by is set to the acting user).
+

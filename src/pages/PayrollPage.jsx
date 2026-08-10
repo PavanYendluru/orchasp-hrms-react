@@ -5,6 +5,7 @@ import { PageHeader } from '../components/common/PageHeader';
 import { DataTable } from '../components/tables/DataTable';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
+import { Button } from '../components/ui/Button';
 import { StatCard } from '../components/common/StatCard';
 import { ApexAreaChart } from '../components/charts/ApexCharts';
 import { Spinner } from '../components/ui/Spinner';
@@ -15,6 +16,7 @@ import PaymentsOutlinedIcon from '@mui/icons-material/PaymentsOutlined';
 import SavingsOutlinedIcon from '@mui/icons-material/SavingsOutlined';
 import TrendingDownOutlinedIcon from '@mui/icons-material/TrendingDownOutlined';
 import ReceiptOutlinedIcon from '@mui/icons-material/ReceiptOutlined';
+import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 
 const statusVariant = {
   PENDING: 'warning',
@@ -94,7 +96,7 @@ export function PayrollPage() {
         <CardContent><ApexAreaChart categories={trendData.categories} data={trendData.data} /></CardContent>
       </Card>
 
-      <div className="flex items-center gap-3">
+<div className="flex items-center gap-3">
         <label className="text-sm text-muted-foreground">Month:</label>
         <select value={month} onChange={(e) => setMonth(e.target.value)} className="input-base w-auto">
           {[-5, -4, -3, -2, -1, 0].map((i) => {
@@ -102,6 +104,9 @@ export function PayrollPage() {
             return <option key={m} value={m}>{moment(m + '-01').format('MMMM YYYY')}</option>;
           })}
         </select>
+        <Button size="sm" onClick={async () => { try { await api.payroll.generate(month); toast.success('Payroll generated for ' + month); setMonth(month); } catch (err) { toast.error(err?.response?.data?.message || 'Generation failed.'); } }}>
+          <AutoAwesomeOutlinedIcon className="h-4 w-4" /> Generate Payroll
+        </Button>
       </div>
 
       {loading ? (

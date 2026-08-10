@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
 import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import PendingOutlinedIcon from '@mui/icons-material/PendingOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 
 const initialForm = { employeeId: '', leaveType: 'ANNUAL', startDate: '', endDate: '', reason: '' };
 const statusVariant = { PENDING: 'warning', APPROVED: 'success', REJECTED: 'danger' };
@@ -23,8 +24,14 @@ export function LeavePage() {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [applyOpen, setApplyOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedLeave, setSelectedLeave] = useState(null);
   const [form, setForm] = useState(initialForm);
   const [saving, setSaving] = useState(false);
+
+  // Date range filter state
+  const [dateFilterStart, setDateFilterStart] = useState('');
+  const [dateFilterEnd, setDateFilterEnd] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -41,12 +48,26 @@ export function LeavePage() {
 
   useEffect(() => { load(); }, [load]);
 
+  // Filter leaves by date range (start date only; leave can span multiple days)
+  const filteredLeaves = useMemo(() => {
+    if (!dateFilterStart && !dateFilterEnd) return leaves;
+    return leaves.filter((leave) => {
+      const leaveStart = moment(leave.startDate);
+      if (dateFilterStart && dateFilterEnd) {
+        return leaveStart.isBetween(moment(dateFilterStart), moment(dateFilterEnd), 'day', '[]');
+      }
+      if (dateFilterStart) return leaveStart.isSameOrAfter(moment(dateFilterStart), 'day');
+      if (dateFilterEnd) return leaveStart.isSameOrBefore(moment(dateFilterEnd), 'day');
+      return true;
+    });
+  }, [leaves, dateFilterStart, dateFilterEnd]);
+
   const stats = useMemo(() => ({
-    total: leaves.length,
-    pending: leaves.filter((leave) => leave.status === 'PENDING').length,
-    approved: leaves.filter((leave) => leave.status === 'APPROVED').length,
-    rejected: leaves.filter((leave) => leave.status === 'REJECTED').length,
-  }), [leaves]);
+    total: filteredLeaves.length,
+    pending: filteredLeaves.filter((leave) => leave.status === 'PENDING').length,
+    approved: filteredLeaves.filter((leave) => leave.status === 'APPROVED').length,
+    rejected: filteredLeaves.filter((leave) => leave.status === 'REJECTED').length,
+  }), [filteredLeaves]);
 
   const submit = async (event) => {
     event.preventDefault();
@@ -69,15 +90,41 @@ export function LeavePage() {
     try {
       await api.leaves[action](leaveId);
       toast.success(`Leave request ${action === 'approve' ? 'approved' : 'rejected'}.`);
+      if (selectedLeave?.id === leaveId) {
+        setSelectedLeave((prev) => ({ ...prev, status: action === 'approve' ? 'APPROVED' : 'REJECTED' }));
+      }
       await load();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Unable to update leave request.');
     }
   };
 
+  const openDetail = (leave) => {
+    setSelectedLeave(leave);
+    setDetailOpen(true);
+  };
+
   return (
     <div className="space-y-5">
       <PageHeader title="Leave Management" description="Review and manage live employee leave requests" actions={<Button onClick={() => setApplyOpen(true)}><EventAvailableOutlinedIcon className="h-4 w-4" /> Apply Leave</Button>} />
+      
+      {/* Date range filter */}
+      <Card>
+        <CardContent className="flex flex-wrap items-end gap-3 p-4">
+          <FormField label="Start Date">
+            <input type="date" className="input-base" value={dateFilterStart} onChange={(e) => setDateFilterStart(e.target.value)} />
+          </FormField>
+          <FormField label="End Date">
+            <input type="date" className="input-base" value={dateFilterEnd} onChange={(e) => setDateFilterEnd(e.target.value)} />
+          </FormField>
+          {(dateFilterStart || dateFilterEnd) && (
+            <Button variant="ghost" size="sm" onClick={() => { setDateFilterStart(''); setDateFilterEnd(''); }}>
+              Clear filter
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard index={0} label="Total Requests" value={stats.total} icon={<EventAvailableOutlinedIcon className="h-5 w-5" />} accent="primary" />
         <StatCard index={1} label="Pending" value={stats.pending} icon={<PendingOutlinedIcon className="h-5 w-5" />} accent="warning" />
@@ -89,10 +136,72 @@ export function LeavePage() {
         <CardContent className="overflow-x-auto">
           {loading ? <div className="flex justify-center py-10"><Spinner className="h-6 w-6" /></div> : <table className="w-full text-sm">
             <thead><tr className="border-b border-border text-left text-muted-foreground"><th className="py-2">Employee</th><th>Employee ID</th><th>Type</th><th>Dates</th><th>Days</th><th>Reason</th><th>Status</th><th>Applied</th><th>Actions</th></tr></thead>
-            <tbody>{leaves.map((leave) => <tr key={leave.id} className="border-b border-border"><td className="py-3 font-medium">{leave.employeeName}</td><td>{leave.employeeId}</td><td className="capitalize">{leave.leaveType?.toLowerCase()}</td><td>{moment(leave.startDate).format('MMM D')} – {moment(leave.endDate).format('MMM D, YYYY')}</td><td>{moment(leave.endDate).diff(moment(leave.startDate), 'days') + 1}</td><td className="max-w-48 truncate" title={leave.reason}>{leave.reason}</td><td><Badge variant={statusVariant[leave.status] || 'muted'}>{leave.status}</Badge></td><td>{leave.appliedAt ? moment(leave.appliedAt).format('MMM D, YYYY') : '—'}</td><td>{leave.status === 'PENDING' && <div className="flex gap-1"><Button size="sm" variant="success" onClick={() => decide(leave.id, 'approve')}>Approve</Button><Button size="sm" variant="danger" onClick={() => decide(leave.id, 'reject')}>Reject</Button></div>}</td></tr>)}{!leaves.length && <tr><td colSpan="9" className="py-10 text-center text-muted-foreground">No leave requests found.</td></tr>}</tbody>
+            <tbody>{filteredLeaves.map((leave) => <tr key={leave.id} className="border-b border-border"><td className="py-3 font-medium">{leave.employeeName}</td><td>{leave.employeeId}</td><td className="capitalize">{leave.leaveType?.toLowerCase()}</td><td>{moment(leave.startDate).format('MMM D')} – {moment(leave.endDate).format('MMM D, YYYY')}</td><td>{moment(leave.endDate).diff(moment(leave.startDate), 'days') + 1}</td><td className="max-w-48 truncate" title={leave.reason}>{leave.reason}</td><td><Badge variant={statusVariant[leave.status] || 'muted'}>{leave.status}</Badge></td><td>{leave.appliedAt ? moment(leave.appliedAt).format('MMM D, YYYY') : '—'}</td><td><div className="flex gap-1"><Button size="sm" variant="ghost" title="View details" onClick={() => openDetail(leave)}><VisibilityOutlinedIcon className="h-4 w-4" /></Button>{leave.status === 'PENDING' && <><Button size="sm" variant="success" onClick={() => decide(leave.id, 'approve')}>Approve</Button><Button size="sm" variant="danger" onClick={() => decide(leave.id, 'reject')}>Reject</Button></>}</div></td></tr>)}{!filteredLeaves.length && <tr><td colSpan="9" className="py-10 text-center text-muted-foreground">No leave requests found.</td></tr>}</tbody>
           </table>}
         </CardContent>
       </Card>
+
+      {/* View Details Modal */}
+      <Modal open={detailOpen} onOpenChange={setDetailOpen} title="Leave Request Details" className="max-w-xl">
+        {selectedLeave && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Employee</p>
+                <p className="mt-1 text-sm font-medium text-foreground">{selectedLeave.employeeName}</p>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Employee ID</p>
+                <p className="mt-1 text-sm font-medium text-foreground">{selectedLeave.employeeId}</p>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Leave Type</p>
+                <p className="mt-1 text-sm font-medium capitalize text-foreground">{selectedLeave.leaveType?.toLowerCase()}</p>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Status</p>
+                <Badge variant={statusVariant[selectedLeave.status] || 'muted'} className="mt-1 capitalize">{selectedLeave.status?.toLowerCase()}</Badge>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Start Date</p>
+                <p className="mt-1 text-sm font-medium text-foreground">{selectedLeave.startDate ? moment(selectedLeave.startDate).format('MMM D, YYYY') : '—'}</p>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">End Date</p>
+                <p className="mt-1 text-sm font-medium text-foreground">{selectedLeave.endDate ? moment(selectedLeave.endDate).format('MMM D, YYYY') : '—'}</p>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Duration</p>
+                <p className="mt-1 text-sm font-medium text-foreground">{selectedLeave.startDate && selectedLeave.endDate ? moment(selectedLeave.endDate).diff(moment(selectedLeave.startDate), 'days') + 1 + ' day(s)' : '—'}</p>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Applied On</p>
+                <p className="mt-1 text-sm font-medium text-foreground">{selectedLeave.appliedAt ? moment(selectedLeave.appliedAt).format('MMM D, YYYY h:mm A') : '—'}</p>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Reason</p>
+              <p className="mt-1 text-sm text-foreground">{selectedLeave.reason || 'No reason provided.'}</p>
+            </div>
+            {selectedLeave.reviewedAt && (
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Reviewed On</p>
+                <p className="mt-1 text-sm font-medium text-foreground">{moment(selectedLeave.reviewedAt).format('MMM D, YYYY h:mm A')}</p>
+              </div>
+            )}
+            <div className="flex gap-2 border-t border-border pt-4">
+              {selectedLeave.status === 'PENDING' && (
+                <>
+                  <Button variant="success" onClick={() => { decide(selectedLeave.id, 'approve'); setDetailOpen(false); }}>Approve</Button>
+                  <Button variant="danger" onClick={() => { decide(selectedLeave.id, 'reject'); setDetailOpen(false); }}>Reject</Button>
+                </>
+              )}
+              <Button variant="outline" onClick={() => setDetailOpen(false)}>Close</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
       <Modal open={applyOpen} onOpenChange={setApplyOpen} title="Apply for Leave"><form onSubmit={submit} className="space-y-4"><FormField label="Employee"><select required className="input-base" value={form.employeeId} onChange={(event) => setForm({ ...form, employeeId: event.target.value })}><option value="">Select employee</option>{employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.firstName} {employee.lastName}</option>)}</select></FormField><FormField label="Leave Type"><select className="input-base" value={form.leaveType} onChange={(event) => setForm({ ...form, leaveType: event.target.value })}>{['ANNUAL', 'SICK', 'PERSONAL', 'UNPAID'].map((type) => <option key={type}>{type}</option>)}</select></FormField><div className="grid grid-cols-2 gap-4"><FormField label="Start Date"><input required min={new Date().toISOString().slice(0, 10)} type="date" className="input-base" value={form.startDate} onChange={(event) => setForm({ ...form, startDate: event.target.value })} /></FormField><FormField label="End Date"><input required min={form.startDate || new Date().toISOString().slice(0, 10)} type="date" className="input-base" value={form.endDate} onChange={(event) => setForm({ ...form, endDate: event.target.value })} /></FormField></div><FormField label="Reason"><textarea required minLength="5" className="input-base min-h-24" value={form.reason} onChange={(event) => setForm({ ...form, reason: event.target.value })} /></FormField><div className="flex gap-2"><Button type="button" variant="outline" onClick={() => setApplyOpen(false)}>Cancel</Button><Button type="submit" disabled={saving}>{saving ? 'Submitting…' : 'Submit'}</Button></div></form></Modal>
     </div>
   );
