@@ -24,6 +24,7 @@ const ReportsPage = lazy(() => import('../pages/ReportsPage').then((m) => ({ def
 const AnalyticsPage = lazy(() => import('../pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsPage })));
 const SettingsPage = lazy(() => import('../pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 const ProfilePage = lazy(() => import('../pages/ProfilePage').then((m) => ({ default: m.ProfilePage })));
+const RecentActivityPage = lazy(() => import('../pages/RecentActivityPage').then((m) => ({ default: m.RecentActivityPage })));
 const LoginPage = lazy(() => import('../pages/auth/LoginPage').then((m) => ({ default: m.LoginPage })));
 const ForgotPasswordPage = lazy(() => import('../pages/auth/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage })));
 const OtpPage = lazy(() => import('../pages/auth/OtpPage').then((m) => ({ default: m.OtpPage })));
@@ -80,6 +81,7 @@ export function AppRoutes() {
           <Route path="/analytics" element={<Suspense fallback={<PageLoader />}><AnalyticsPage /></Suspense>} />
           <Route path="/settings" element={<Suspense fallback={<PageLoader />}><SettingsPage /></Suspense>} />
           <Route path="/profile" element={<Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>} />
+          <Route path="/activities" element={<Suspense fallback={<PageLoader />}><RecentActivityPage /></Suspense>} />
           </Route>
         </Route>
 

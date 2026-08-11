@@ -22,6 +22,8 @@ export const api = {
   profile: {
     me: async () => (await http.get('/me')).data,
     update: async (values) => (await http.patch('/me/profile', values)).data,
+    hr: async () => (await http.get('/me/hr-profile')).data,
+    updateHr: async (values) => (await http.patch('/me/hr-profile', values)).data,
   },
   attendance: {
     punchIn: async (employeeId) => (await http.post(`/attendance/punch-in/${employeeId}`)).data,
@@ -67,7 +69,7 @@ export const api = {
     hr: async () => (await http.get('/dashboard/hr')).data,
     employee: async (employeeId) => (await http.get(`/dashboard/employee/${employeeId}`)).data,
     birthdays: async () => (await http.get('/dashboard/birthdays')).data,
-    activities: async () => (await http.get('/dashboard/activities')).data,
+    activities: async (params = {}) => (await http.get('/dashboard/activities', { params })).data,
   },
   projects: {
     list: async () => (await http.get('/projects')).data,

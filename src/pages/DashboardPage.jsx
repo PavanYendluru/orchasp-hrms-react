@@ -61,7 +61,7 @@ export function DashboardPage() {
         const [hrData, bdays, acts] = await Promise.all([
           api.dashboard.hr(),
           api.dashboard.birthdays(),
-          api.dashboard.activities(),
+          api.dashboard.activities({ limit: 8 }),
         ]);
         if (isMounted) {
           setHrDashboard(hrData);
@@ -96,7 +96,7 @@ export function DashboardPage() {
   }), [hrDashboard]);
 
   const timelineItems = useMemo(() =>
-    activities.map((a) => ({
+    activities.slice(0, 8).map((a) => ({
       id: String(a.id),
       title: a.description || a.activityType,
       description: `${a.employeeName} - ${a.activityType.replace(/_/g, ' ')}`,
@@ -144,16 +144,17 @@ export function DashboardPage() {
           <CardTitle>Live Date & Time</CardTitle>
         </CardHeader>
         <CardContent>
-  <div className="grid grid-cols-2 gap-4">
-    <div className="rounded-lg bg-muted/30 p-4 text-center">
-      ...
-    </div>
-
-    <div className="rounded-lg bg-muted/30 p-4 text-center">
-      ...
-    </div>
-  </div>
-</CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-lg bg-muted/30 p-4 text-center">
+              <p className="text-sm text-muted-foreground">Current Date</p>
+              <p className="mt-1 font-semibold text-foreground">{currentTime.format('dddd, MMMM D, YYYY')}</p>
+            </div>
+            <div className="rounded-lg bg-muted/30 p-4 text-center">
+              <p className="text-sm text-muted-foreground">Current Time</p>
+              <p className="mt-1 font-semibold text-foreground">{currentTime.format('h:mm:ss A')}</p>
+            </div>
+          </div>
+        </CardContent>
       </Card>
     ),
     activities: (
@@ -167,6 +168,7 @@ export function DashboardPage() {
           ) : (
             <p className="text-sm text-muted-foreground">No recent activities.</p>
           )}
+          <button type="button" className="mt-4 text-sm font-medium text-primary hover:underline" onClick={() => navigate('/activities')}>See More</button>
         </CardContent>
       </Card>
     ),
