@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import moment from 'moment';
 import { PageHeader } from '../components/common/PageHeader';
+import { ImportExcelButton } from '../components/common/ImportExcelButton';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -106,7 +107,7 @@ export function LeavePage() {
 
   return (
     <div className="space-y-5">
-      <PageHeader title="Leave Management" description="Review and manage live employee leave requests" actions={<Button onClick={() => setApplyOpen(true)}><EventAvailableOutlinedIcon className="h-4 w-4" /> Apply Leave</Button>} />
+      <PageHeader title="Leave Management" description="Review and manage live employee leave requests" actions={<><ImportExcelButton module="leaves" onImported={() => window.location.reload()} /><Button onClick={() => setApplyOpen(true)}><EventAvailableOutlinedIcon className="h-4 w-4" /> Apply Leave</Button></>} />
       
       {/* Date range filter */}
       <Card>

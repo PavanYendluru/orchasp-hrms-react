@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '../components/common/PageHeader';
+import { ImportExcelButton } from '../components/common/ImportExcelButton';
 import { DataTable } from '../components/tables/DataTable';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
@@ -107,7 +108,7 @@ cell: ({ row }) => (
       <PageHeader
         title="Employees"
         description={selectedDepartmentName ? `Showing employees in ${selectedDepartmentName}` : "Manage your organization's workforce"}
-        actions={<Button onClick={() => setForm(emptyEmployee)}>Add Employee</Button>}
+        actions={<><ImportExcelButton module="employees" onImported={() => window.location.reload()} /><Button onClick={() => setForm(emptyEmployee)}>Add Employee</Button></>}
       />
 
       <div className="flex flex-wrap items-center gap-3 bg-card p-3 rounded-lg border border-border">

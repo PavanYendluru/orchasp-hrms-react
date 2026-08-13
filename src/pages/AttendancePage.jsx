@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState  } from 'react';
 import moment from 'moment';
 import { PageHeader  } from '../components/common/PageHeader';
+import { ImportExcelButton } from '../components/common/ImportExcelButton';
 import { Card, CardHeader, CardTitle, CardContent  } from '../components/ui/Card';
 import { Badge  } from '../components/ui/Badge';
 import { Button  } from '../components/ui/Button';
@@ -86,7 +87,7 @@ export function AttendancePage() {
 
   return (
     <div className="space-y-5">
-      <PageHeader title="Attendance" description="Track daily attendance and punch in/out" />
+      <PageHeader title="Attendance" description="Track daily attendance and punch in/out" actions={<ImportExcelButton module="attendance" onImported={() => window.location.reload()} />} />
 
       {/* Punch card */}
       <Card className="p-6">

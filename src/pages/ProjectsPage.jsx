@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import moment from 'moment';
 import { PageHeader } from '../components/common/PageHeader';
+import { ImportExcelButton } from '../components/common/ImportExcelButton';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -127,7 +128,7 @@ export function ProjectsPage() {
       <PageHeader
         title="Projects"
         description="Manage the Orchasp company portfolio and initiatives"
-        actions={<Button onClick={openCreate}><AddOutlinedIcon className="h-4 w-4" /> New Project</Button>}
+        actions={<><ImportExcelButton module="projects" onImported={() => window.location.reload()} /><Button onClick={openCreate}><AddOutlinedIcon className="h-4 w-4" /> New Project</Button></>}
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

@@ -2,6 +2,14 @@
 import { http } from './http';
 
 export const api = {
+  imports: {
+    file: async (module, file) => {
+      const form = new FormData();
+      form.append('file', file);
+      return (await http.post(`/admin/import/${module}`, form, { headers: { 'Content-Type': 'multipart/form-data' } })).data;
+    },
+    templateUrl: (module) => `http://localhost:8080/api/admin/import/${module}/template`,
+  },
   employees: {
     create: async (values) => (await http.post('/admin/employees', values)).data,
     update: async (id, values) => (await http.put(`/admin/employees/${id}`, values)).data,

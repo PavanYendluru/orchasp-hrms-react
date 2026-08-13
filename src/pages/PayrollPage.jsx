@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import moment from 'moment';
 import { PageHeader } from '../components/common/PageHeader';
+import { ImportExcelButton } from '../components/common/ImportExcelButton';
 import { DataTable } from '../components/tables/DataTable';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
@@ -82,7 +83,7 @@ export function PayrollPage() {
 
   return (
     <div className="space-y-5">
-      <PageHeader title="Payroll" description="Manage monthly payroll, bonuses, and deductions" />
+      <PageHeader title="Payroll" description="Manage monthly payroll, bonuses, and deductions" actions={<ImportExcelButton module="payroll" onImported={() => window.location.reload()} />} />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard index={0} label="Gross Payroll" value={formatCurrency(totals.gross)} icon={<PaymentsOutlinedIcon className="h-5 w-5" />} accent="primary" />

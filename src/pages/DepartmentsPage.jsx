@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../components/common/PageHeader';
+import { ImportExcelButton } from '../components/common/ImportExcelButton';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
@@ -18,7 +19,7 @@ export function DepartmentsPage() {
   const remove = async (department) => { if (!window.confirm(`Delete ${department.name}?`)) return; try { await api.departments.remove(department.id); await load(); toast.success('Department deleted.'); } catch (error) { toast.error(error.response?.data?.message || 'Unable to delete department.'); } };
   return (
     <div className="space-y-5">
-      <PageHeader title="Departments" description="Manage your organization departments" actions={<Button onClick={() => setForm(emptyDepartment)}>Add Department</Button>} />
+      <PageHeader title="Departments" description="Manage your organization departments" actions={<><ImportExcelButton module="departments" onImported={() => window.location.reload()} /><Button onClick={() => setForm(emptyDepartment)}>Add Department</Button></>} />
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {departments.map((department) => (
           <Card key={department.id} className="transition-all hover:shadow-md">

@@ -1,6 +1,7 @@
 /** Displays employee performance scores (backend-driven). HR can create/edit scores. */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PageHeader } from '../components/common/PageHeader';
+import { ImportExcelButton } from '../components/common/ImportExcelButton';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Avatar } from '../components/ui/Avatar';
 import { Badge } from '../components/ui/Badge';
@@ -119,7 +120,7 @@ export function PerformancePage() {
       <PageHeader
         title="Performance"
         description="Employee performance reviews and analytics"
-        actions={<Button onClick={openCreate}><AddOutlinedIcon className="h-4 w-4" /> Record Score</Button>}
+        actions={<><ImportExcelButton module="performance" onImported={() => window.location.reload()} /><Button onClick={openCreate}><AddOutlinedIcon className="h-4 w-4" /> Record Score</Button></>}
       />
 
       {loading ? (

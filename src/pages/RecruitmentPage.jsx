@@ -1,6 +1,7 @@
 /** Manages job openings and the candidate recruitment pipeline (backend-driven). */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PageHeader } from '../components/common/PageHeader';
+import { ImportExcelButton } from '../components/common/ImportExcelButton';
 import { DataTable } from '../components/tables/DataTable';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
@@ -171,7 +172,7 @@ export function RecruitmentPage() {
       <PageHeader
         title="Recruitment"
         description="Manage job openings and the candidate pipeline"
-        actions={<><Button variant="outline" onClick={() => openCand(null)}><PersonAddOutlinedIcon className="h-4 w-4" /> Add Candidate</Button><Button onClick={() => openJob(null)}><WorkOutlineOutlinedIcon className="h-4 w-4" /> New Opening</Button></>}
+        actions={<><ImportExcelButton module="candidates" label="Import Candidates" onImported={() => window.location.reload()} /><ImportExcelButton module="job-openings" label="Import Openings" onImported={() => window.location.reload()} /><Button variant="outline" onClick={() => openCand(null)}><PersonAddOutlinedIcon className="h-4 w-4" /> Add Candidate</Button><Button onClick={() => openJob(null)}><WorkOutlineOutlinedIcon className="h-4 w-4" /> New Opening</Button></>}
       />
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">

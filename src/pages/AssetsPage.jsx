@@ -4,6 +4,7 @@ import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import AssignmentReturnOutlinedIcon from '@mui/icons-material/AssignmentReturnOutlined';
 import { PageHeader } from '../components/common/PageHeader';
+import { ImportExcelButton } from '../components/common/ImportExcelButton';
 import { DataTable } from '../components/tables/DataTable';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
@@ -71,7 +72,7 @@ export function AssetsPage() {
       <Button aria-label="Delete asset" variant="ghost" size="icon" className="text-danger" onClick={() => remove(row.original)}><DeleteOutlinedIcon className="h-4 w-4" /></Button>
     </div> },
   ], [employees]);
-  return <div className="space-y-5"><PageHeader title="Assets" description="Track and manage company assets and inventory" actions={<div className="flex gap-2"><Button variant="outline" onClick={() => setAssignment(true)}>Assign Asset</Button><Button onClick={() => setAssetForm(blankAsset)}><AddOutlinedIcon className="h-4 w-4" /> Add Asset</Button></div>} />
+  return <div className="space-y-5"><PageHeader title="Assets" description="Track and manage company assets and inventory" actions={<div className="flex gap-2"><ImportExcelButton module="assets" onImported={() => window.location.reload()} /><Button variant="outline" onClick={() => setAssignment(true)}>Assign Asset</Button><Button onClick={() => setAssetForm(blankAsset)}><AddOutlinedIcon className="h-4 w-4" /> Add Asset</Button></div>} />
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-4"><StatCard label="Total Assets" value={stats.total} icon={<Inventory2OutlinedIcon className="h-5 w-5" />} accent="primary" /><StatCard label="Assigned" value={stats.assigned} icon={<CheckCircleOutlinedIcon className="h-5 w-5" />} accent="success" /><StatCard label="Available" value={stats.available} icon={<Inventory2OutlinedIcon className="h-5 w-5" />} accent="secondary" /><StatCard label="Damaged" value={stats.damaged} icon={<DangerousOutlinedIcon className="h-5 w-5" />} accent="danger" /></div>
     <Card><CardHeader><CardTitle>Assets by Category</CardTitle></CardHeader><CardContent><ApexBarChart categories={byCategory.categories} data={byCategory.data} /></CardContent></Card>
     {loading ? <div className="flex justify-center py-16"><Spinner className="h-8 w-8" /></div> : <DataTable columns={columns} data={assetsWithAssignee} searchKey={(asset) => `${asset.name} ${asset.serial} ${asset.category} ${asset.status}`} searchPlaceholder="Search assets…" exportFilename="assets.csv" />}
