@@ -6,6 +6,7 @@ import { cn } from '../../lib/utils';
 import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
 import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
 import SettingsBrightnessOutlinedIcon from '@mui/icons-material/SettingsBrightnessOutlined';
+import { BrandMark } from '../common/BrandMark';
 
 const links = [
   { to: '/employee/dashboard', label: 'Dashboard' },
@@ -37,7 +38,7 @@ export function EmployeeAppShell() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 lg:px-6">
-          <div><p className="font-display text-lg font-bold text-foreground">Orchasp Employee Portal</p><p className="text-xs text-muted-foreground">{employee?.name} · {employee?.employeeId}</p></div>
+          <div className="flex items-center gap-2.5"><BrandMark className="h-9 w-9" /><div><p className="font-display text-lg font-bold text-foreground">Orchasp Employee Portal</p><p className="text-xs text-muted-foreground">{employee?.name} · {employee?.employeeId}</p></div></div>
           <div className="flex items-center gap-2">
             <div className="flex items-center rounded-lg border border-border bg-background p-0.5" role="group" aria-label="Theme">
               {themeOptions.map((option) => (

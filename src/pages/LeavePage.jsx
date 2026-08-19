@@ -17,18 +17,13 @@ import CheckCircleOutlinedIcon from '@mui/icons-material/CheckCircleOutlined';
 import PendingOutlinedIcon from '@mui/icons-material/PendingOutlined';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 
-const initialForm = { employeeId: '', leaveType: 'ANNUAL', startDate: '', endDate: '', reason: '' };
 const statusVariant = { PENDING: 'warning', APPROVED: 'success', REJECTED: 'danger' };
 
 export function LeavePage() {
   const [leaves, setLeaves] = useState([]);
-  const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [applyOpen, setApplyOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedLeave, setSelectedLeave] = useState(null);
-  const [form, setForm] = useState(initialForm);
-  const [saving, setSaving] = useState(false);
 
   // Date range filter state
   const [dateFilterStart, setDateFilterStart] = useState('');
@@ -37,9 +32,8 @@ export function LeavePage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [leaveData, employeeData] = await Promise.all([api.leaves.list(), api.employees.all()]);
+      const leaveData = await api.leaves.list();
       setLeaves(leaveData || []);
-      setEmployees(employeeData || []);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Unable to load leave requests.');
     } finally {
@@ -70,23 +64,6 @@ export function LeavePage() {
     rejected: filteredLeaves.filter((leave) => leave.status === 'REJECTED').length,
   }), [filteredLeaves]);
 
-  const submit = async (event) => {
-    event.preventDefault();
-    if (form.endDate < form.startDate) return toast.error('End date must be on or after the start date.');
-    setSaving(true);
-    try {
-      await api.leaves.create({ ...form, employeeId: Number(form.employeeId) });
-      toast.success('Leave request submitted.');
-      setApplyOpen(false);
-      setForm(initialForm);
-      await load();
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Unable to submit leave request.');
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const decide = async (leaveId, action) => {
     try {
       await api.leaves[action](leaveId);
@@ -107,7 +84,7 @@ export function LeavePage() {
 
   return (
     <div className="space-y-5">
-      <PageHeader title="Leave Management" description="Review and manage live employee leave requests" actions={<><ImportExcelButton module="leaves" onImported={() => window.location.reload()} /><Button onClick={() => setApplyOpen(true)}><EventAvailableOutlinedIcon className="h-4 w-4" /> Apply Leave</Button></>} />
+      <PageHeader title="Leave Management" description="Review and manage live employee leave requests" actions={<ImportExcelButton module="leaves" onImported={() => window.location.reload()} />} />
       
       {/* Date range filter */}
       <Card>
@@ -203,7 +180,6 @@ export function LeavePage() {
         )}
       </Modal>
 
-      <Modal open={applyOpen} onOpenChange={setApplyOpen} title="Apply for Leave"><form onSubmit={submit} className="space-y-4"><FormField label="Employee"><select required className="input-base" value={form.employeeId} onChange={(event) => setForm({ ...form, employeeId: event.target.value })}><option value="">Select employee</option>{employees.map((employee) => <option key={employee.id} value={employee.id}>{employee.firstName} {employee.lastName}</option>)}</select></FormField><FormField label="Leave Type"><select className="input-base" value={form.leaveType} onChange={(event) => setForm({ ...form, leaveType: event.target.value })}>{['ANNUAL', 'SICK', 'PERSONAL', 'UNPAID'].map((type) => <option key={type}>{type}</option>)}</select></FormField><div className="grid grid-cols-2 gap-4"><FormField label="Start Date"><input required min={new Date().toISOString().slice(0, 10)} type="date" className="input-base" value={form.startDate} onChange={(event) => setForm({ ...form, startDate: event.target.value })} /></FormField><FormField label="End Date"><input required min={form.startDate || new Date().toISOString().slice(0, 10)} type="date" className="input-base" value={form.endDate} onChange={(event) => setForm({ ...form, endDate: event.target.value })} /></FormField></div><FormField label="Reason"><textarea required minLength="5" className="input-base min-h-24" value={form.reason} onChange={(event) => setForm({ ...form, reason: event.target.value })} /></FormField><div className="flex gap-2"><Button type="button" variant="outline" onClick={() => setApplyOpen(false)}>Cancel</Button><Button type="submit" disabled={saving}>{saving ? 'Submitting…' : 'Submit'}</Button></div></form></Modal>
     </div>
   );
 }

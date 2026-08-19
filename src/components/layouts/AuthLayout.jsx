@@ -1,6 +1,7 @@
 /** Provides the branded split-screen layout for authentication pages. */
 import { motion  } from 'framer-motion';
 import { appName, appTagline  } from '../../constants/app';
+import { BrandMark } from '../common/BrandMark';
 
 export function AuthLayout({ children, title, subtitle }) {
   return (
@@ -9,9 +10,7 @@ export function AuthLayout({ children, title, subtitle }) {
         {/* Left brand panel */}
         <div className="relative hidden flex-col justify-between bg-gradient-to-br from-primary to-secondary p-10 text-white lg:flex">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur">
-              <span className="font-display text-xl font-bold">N</span>
-            </div>
+            <BrandMark />
             <div><p className="font-display text-lg font-bold">{appName}</p><p className="text-xs text-white/80">{appTagline}</p></div>
           </div>
           <div>
@@ -26,6 +25,7 @@ export function AuthLayout({ children, title, subtitle }) {
         {/* Right form panel */}
         <div className="flex flex-col justify-center p-8 sm:p-12">
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+            <div className="mb-5 flex items-center gap-2.5 lg:hidden"><BrandMark /><div><p className="font-display text-base font-bold text-foreground">{appName}</p><p className="text-xs text-muted-foreground">{appTagline}</p></div></div>
             <h1 className="font-display text-2xl font-bold text-foreground">{title}</h1>
             <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
             <div className="mt-8">{children}</div>

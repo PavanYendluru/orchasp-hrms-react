@@ -78,6 +78,7 @@ export const api = {
     employee: async (employeeId) => (await http.get(`/dashboard/employee/${employeeId}`)).data,
     birthdays: async () => (await http.get('/dashboard/birthdays')).data,
     activities: async (params = {}) => (await http.get('/dashboard/activities', { params })).data,
+    analytics: async () => (await http.get('/dashboard/analytics')).data,
   },
   projects: {
     list: async () => (await http.get('/projects')).data,
@@ -93,6 +94,7 @@ export const api = {
     create: async (values) => (await http.post('/admin/tasks', values)).data,
     update: async (id, values) => (await http.put(`/admin/tasks/${id}`, values)).data,
     transition: async (id, status) => (await http.put(`/tasks/${id}/status/${status}`)).data,
+    accept: async (id) => (await http.post(`/tasks/${id}/accept`)).data,
     remove: async (id) => http.delete(`/admin/tasks/${id}`),
   },
   performance: {

@@ -7,6 +7,7 @@ import { navGroups, navItems, logoutItem, appName  } from '../../constants/navig
 import { cn  } from '../../lib/utils';
 import { useAuth  } from '../../context/AuthContext';
 import { Avatar  } from '../ui/Avatar';
+import { BrandMark } from '../common/BrandMark';
 
 export function Sidebar({
   collapsed,
@@ -49,9 +50,7 @@ export function Sidebar({
         {/* Logo */}
         <div className="flex h-16 items-center justify-between border-b border-border px-4">
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-secondary text-white shadow-glow">
-              <span className="font-display text-lg font-bold">O</span>
-            </div>
+            <BrandMark className="h-9 w-9" />
             {!collapsed && (
               <div className="min-w-0">
                 <p className="truncate font-display text-sm font-bold text-foreground">Orchasp</p>

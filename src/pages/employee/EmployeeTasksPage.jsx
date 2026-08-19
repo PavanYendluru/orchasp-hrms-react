@@ -40,6 +40,15 @@ export function EmployeeTasksPage() {
       toast.error(error.response?.data?.message || 'Unable to update task.');
     }
   };
+  const accept = async (task) => {
+    try {
+      await api.tasks.accept(task.id);
+      toast.success('Task accepted. HR can now start the task.');
+      await load();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Unable to accept task.');
+    }
+  };
 
   const grouped = useMemo(() => {
     const map = { TODO: [], IN_PROGRESS: [], REVIEW: [], DONE: [] };
@@ -56,7 +65,7 @@ export function EmployeeTasksPage() {
       {task.description && <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{task.description}</p>}
       <div className="mt-2 text-xs text-muted-foreground">Due {task.dueDate ? moment(task.dueDate).format('MMM D, YYYY') : '—'}</div>
       <div className="mt-2 flex flex-wrap gap-1.5">
-        {task.status === 'TODO' && <Button size="sm" variant="success" onClick={() => move(task, 'IN_PROGRESS')}>Accept Task</Button>}
+        {task.status === 'TODO' && (task.acceptedAt ? <Badge variant="primary">Accepted — awaiting HR</Badge> : <Button size="sm" variant="success" onClick={() => accept(task)}>Accept Task</Button>)}
         {task.status === 'IN_PROGRESS' && <Button size="sm" variant="warning" onClick={() => move(task, 'REVIEW')}>Move to Review</Button>}
         {task.status === 'REVIEW' && <Badge variant="warning">Awaiting HR review</Badge>}
         {task.status === 'DONE' && <Badge variant="success">Completed</Badge>}
